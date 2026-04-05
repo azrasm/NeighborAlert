@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class AdministrationDataLoader implements CommandLineRunner {
+public class DataLoader implements CommandLineRunner {
 
     private final ReportAssignmentRepository assignmentRepository;
     private final StatusHistoryRepository historyRepository;
 
-    public AdministrationDataLoader(ReportAssignmentRepository assignmentRepository, StatusHistoryRepository historyRepository) {
+    public DataLoader(ReportAssignmentRepository assignmentRepository, StatusHistoryRepository historyRepository) {
         this.assignmentRepository = assignmentRepository;
         this.historyRepository = historyRepository;
     }
