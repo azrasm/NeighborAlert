@@ -3,7 +3,7 @@ package com.projekat.user_service.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "korisnici") // Ovako će se zvati tabela u phpMyAdmin-u
+@Table(name = "korisnici")
 public class User {
     
     @Id
@@ -11,30 +11,37 @@ public class User {
     private Long id;
 
     private String username;
+    private String password; // Dodato prema ERD-u
     private String email;
-    private String rank; 
-    private int points;
+    
+    @Column(name = "user_score")
+    private int userScore; // Promenjeno ime da odgovara ERD-u
 
-    // Prazan konstruktor (obavezan za JPA)
+    @ManyToOne
+    @JoinColumn(name = "role_id") // Spoljni ključ prema ERD-u
+    private UserRole role;
+
     public User() {}
 
-    // Konstruktor za lakši unos podataka kasnije
-    public User(String username, String email, String rank, int points) {
+    public User(String username, String password, String email, int userScore, UserRole role) {
         this.username = username;
+        this.password = password;
         this.email = email;
-        this.rank = rank;
-        this.points = points;
+        this.userScore = userScore;
+        this.role = role;
     }
 
-    // Getteri i Setteri (da bi mogli pristupiti podacima)
+    // Getteri i Setteri
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-    public String getRank() { return rank; }
-    public void setRank(String rank) { this.rank = rank; }
-    public int getPoints() { return points; }
-    public void setPoints(int points) { this.points = points; }
+    public int getUserScore() { return userScore; }
+    public void setUserScore(int userScore) { this.userScore = userScore; }
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
 }
