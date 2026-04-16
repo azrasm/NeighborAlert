@@ -8,12 +8,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataLoader implements CommandLineRunner {
 
-    private final ReportRepository reportRepository = null;
-    private final CategoryRepository categoryRepository = null;
-    private final StatusRepository statusRepository = null;
+    // 1. Ukloni "= null" i ostavi samo deklaraciju
+    private final ReportRepository reportRepository;
+    private final CategoryRepository categoryRepository;
+    private final StatusRepository statusRepository;
+
+    // 2. DODAJ KONSTRUKTOR (Ovo je ključni deo koji nedostaje)
+    public DataLoader(ReportRepository reportRepository, 
+                      CategoryRepository categoryRepository, 
+                      StatusRepository statusRepository) {
+        this.reportRepository = reportRepository;
+        this.categoryRepository = categoryRepository;
+        this.statusRepository = statusRepository;
+    }
 
     @Override
     public void run(String... args) throws Exception {
+        // Sada categoryRepository VIŠE NIJE null, Spring ga je popunio kroz konstruktor
         Category rupa = new Category();
         rupa.setName("Oštećenje puta");
         categoryRepository.save(rupa);
