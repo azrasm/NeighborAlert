@@ -1,6 +1,9 @@
 package com.projekat.interaction_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "komentari")
@@ -9,12 +12,16 @@ public class Comment {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "Report ID is mandatory")
     @Column(name = "report_id")
     private Long reportId;
-
+    
+    @NotNull(message = "User ID is mandatory")
     @Column(name = "user_id")
     private Long userId;
-
+    
+    @NotBlank(message = "Comment message cannot be empty")
+    @Size(min = 1, max = 1000, message = "Comment must be between 1 and 1000 characters")
     @Column(columnDefinition = "TEXT")
     private String text;
 

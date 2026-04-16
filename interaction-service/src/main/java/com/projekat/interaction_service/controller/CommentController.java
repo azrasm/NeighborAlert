@@ -3,6 +3,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projekat.interaction_service.model.Comment;
 import com.projekat.interaction_service.service.CommentService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +51,7 @@ class CommentController {
     
     // PUT Izmjena kometara
     @PutMapping("/{id}")
-    public Comment updateComment(@PathVariable Long id, @RequestBody Comment commentDetails) {
+    public Comment updateComment(@PathVariable Long id, @Valid @RequestBody Comment commentDetails) {
         return commentService.updateComment(id, commentDetails);
     }
     

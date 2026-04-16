@@ -1,6 +1,8 @@
 package com.projekat.interaction_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "notifikacije")
@@ -9,9 +11,11 @@ public class Notification {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "User ID is mandatory")
     @Column(name = "user_id")
     private Long userId;
 
+    @NotBlank(message = "Notification message cannot be empty")
     private String message;
 
     // Konstruktori

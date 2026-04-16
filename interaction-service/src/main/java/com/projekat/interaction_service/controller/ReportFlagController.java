@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projekat.interaction_service.model.ReportFlag;
 import com.projekat.interaction_service.service.ReportFlagService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/flags")
 public class ReportFlagController {
@@ -26,7 +28,7 @@ public class ReportFlagController {
 
     // POST /api/flags - Kreiranje prijave
     @PostMapping
-    public ResponseEntity<ReportFlag> createFlag(@RequestBody ReportFlag flag) {
+    public ResponseEntity<ReportFlag> createFlag(@Valid @RequestBody ReportFlag flag) {
         return new ResponseEntity<>(flagService.createFlag(flag), HttpStatus.CREATED);
     }
 
@@ -44,7 +46,7 @@ public class ReportFlagController {
 
     // PATCH /api/flags/{id}/review - Oznacavanje kao pregledano
     @PatchMapping("/{id}/review")
-    public ReportFlag markAsReviewed(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
+    public ReportFlag markAsReviewed(@PathVariable Long id, @Valid @RequestBody Map<String, Boolean> body) {
         // Izvlacimo "reviewed" vrijednost iz JSON-a
         boolean status = body.getOrDefault("reviewed", true);
         return flagService.markAsReviewed(id, status);
