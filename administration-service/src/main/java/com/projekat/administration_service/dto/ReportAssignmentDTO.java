@@ -1,15 +1,24 @@
 package com.projekat.administration_service.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+
 public class ReportAssignmentDTO {
+
+    @NotNull(message = "ID prijave je obavezan")
     private Long reportId;
+
+    @NotEmpty(message = "Naziv službe ne može biti prazan")
     private String service;
-    private String note;
+
+    private String note; // Ovo ostavljamo bez anotacije jer note može biti prazan
+
+    @NotNull(message = "ID administratora je obavezan")
     private Long adminId;
 
-    // Prazan konstruktor (neophodan za Java framework-e)
+
     public ReportAssignmentDTO() {}
 
-    // Konstruktor sa svim poljima
     public ReportAssignmentDTO(Long reportId, String service, String note, Long adminId) {
         this.reportId = reportId;
         this.service = service;
@@ -17,7 +26,6 @@ public class ReportAssignmentDTO {
         this.adminId = adminId;
     }
 
-    // Getteri i Setteri
     public Long getReportId() { return reportId; }
     public void setReportId(Long reportId) { this.reportId = reportId; }
 

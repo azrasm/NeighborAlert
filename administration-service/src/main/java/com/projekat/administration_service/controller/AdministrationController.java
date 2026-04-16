@@ -5,27 +5,28 @@ import com.projekat.administration_service.dto.StatusHistoryDTO;
 import com.projekat.administration_service.model.ReportAssignment;
 import com.projekat.administration_service.model.StatusHistory;
 import com.projekat.administration_service.service.AdministrationService;
+import jakarta.validation.Valid; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/administration") // Osnovna putanja za ovaj kontroler
+@RequestMapping("/api/administration")
 public class AdministrationController {
 
     @Autowired
     private AdministrationService administrationService;
 
-    // Endpoint za dodelu prijave: POST http://localhost:8080/api/administration/assign
+    // Endpoint za dodjelu prijave
     @PostMapping("/assign")
-    public ResponseEntity<ReportAssignment> assignReport(@RequestBody ReportAssignmentDTO dto) {
+    public ResponseEntity<ReportAssignment> assignReport(@Valid @RequestBody ReportAssignmentDTO dto) {
         ReportAssignment result = administrationService.assignReport(dto);
         return ResponseEntity.ok(result);
     }
 
-    // Endpoint za promenu statusa: POST http://localhost:8080/api/administration/status
+    // Endpoint za promjenu statusa
     @PostMapping("/status")
-    public ResponseEntity<StatusHistory> updateStatus(@RequestBody StatusHistoryDTO dto) {
+    public ResponseEntity<StatusHistory> updateStatus(@Valid @RequestBody StatusHistoryDTO dto) {
         StatusHistory result = administrationService.updateStatus(dto);
         return ResponseEntity.ok(result);
     }
