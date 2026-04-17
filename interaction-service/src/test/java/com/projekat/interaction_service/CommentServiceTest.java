@@ -81,7 +81,7 @@ public class CommentServiceTest {
         verify(commentRepository, times(1)).deleteById(1L);
     }
 
-    // 4. Test za neuspjedno brisanje (kad Id ne postoji)
+    // 4. Test za neuspjesno brisanje (kad Id ne postoji)
     
     void deleteComment_WhenNotExists_ShouldThrowException() {
         when(commentRepository.existsById(99L)).thenReturn(false);
@@ -94,7 +94,7 @@ public class CommentServiceTest {
         verify(commentRepository, never()).deleteById(anyLong());
     }
 
-    // 5. Test za uspješan update
+    // 5. Test za uspjesan update
     @Test
     void updateComment_WhenExists_ShouldUpdateText() {
         Comment updatedDetails = new Comment();

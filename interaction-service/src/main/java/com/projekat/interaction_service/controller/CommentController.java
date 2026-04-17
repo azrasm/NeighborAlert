@@ -36,7 +36,7 @@ class CommentController {
 
     // POST ruta za dodavanje novog komentara
     @PostMapping
-    public Comment createComment(@RequestBody Comment newComment) {
+    public Comment createComment(@Valid @RequestBody Comment newComment) {
         return commentService.saveComment(newComment);
     }
 
