@@ -1,6 +1,7 @@
 package com.projekat.report_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 public class Status {
@@ -8,6 +9,7 @@ public class Status {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Status name is mandatory")
     private String name;
 
     public Status() {}

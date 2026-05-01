@@ -1,6 +1,7 @@
 package com.projekat.report_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Upvote {
@@ -8,9 +9,11 @@ public class Upvote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull(message = "User ID is mandatory")
     @Column(name = "user_id")
     private Long userId;
 
+    @NotNull(message = "Report must be assigned to Upvote")
     @ManyToOne
     @JoinColumn(name = "report_id")
     private Report report;
