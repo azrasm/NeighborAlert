@@ -1,8 +1,14 @@
 package com.projekat.report_service.dto;
 
+import jakarta.validation.constraints.NotNull;
+
 public class UpvoteDTO {
     private Long id;
+
+    @NotNull(message = "Report ID is required")
     private Long reportId; // ID prijave za koju se glasa
+
+    @NotNull(message = "User ID is mandatory")
     private Long userId;   // ID korisnika koji glasa
 
     public UpvoteDTO() {}

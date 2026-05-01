@@ -3,6 +3,9 @@ package com.projekat.report_service.controller;
 import com.projekat.report_service.dto.UpvoteDTO;
 import com.projekat.report_service.model.Upvote;
 import com.projekat.report_service.repository.UpvoteRepository;
+
+import jakarta.validation.Valid;
+
 import com.projekat.report_service.repository.ReportRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +37,7 @@ public class UpvoteController {
     }
 
     @PostMapping
-    public ResponseEntity<UpvoteDTO> createUpvote(@RequestBody UpvoteDTO upvoteDTO) {
+    public ResponseEntity<UpvoteDTO> createUpvote(@Valid @RequestBody UpvoteDTO upvoteDTO) {
         Upvote upvote = modelMapper.map(upvoteDTO, Upvote.class);
 
         // Povezivanje sa Report entitetom

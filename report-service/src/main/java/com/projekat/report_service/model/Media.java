@@ -1,6 +1,8 @@
 package com.projekat.report_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 public class Media {
@@ -8,8 +10,10 @@ public class Media {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "URL is mandatory")
     private String url;
 
+    @NotNull(message = "Report must be assigned to the Media")
     @ManyToOne
     @JoinColumn(name = "report_id")
     private Report report;

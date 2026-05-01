@@ -1,10 +1,17 @@
 package com.projekat.report_service.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class MediaDTO {
     private Long id;
     private String fileName;
     private String fileType;
+
+    @NotBlank(message = "URL is required")
     private String url; //URL preko kojeg će se slika moći vidjeti
+
+    @NotNull(message = "Report ID is required")
     private Long reportId; //ID prijave kojoj ova slika pripada
 
     public MediaDTO() {}

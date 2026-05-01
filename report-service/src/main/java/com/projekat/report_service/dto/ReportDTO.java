@@ -1,13 +1,27 @@
 package com.projekat.report_service.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class ReportDTO {
     private Long id;
+
+    @NotBlank(message = "Title cannot be empty")
     private String title;
+
+    @NotBlank(message = "Description is required")
     private String description;
+
+    @NotBlank(message = "Adress cannot be empty")
     private String address;
     
+    @NotNull(message = "Category ID is required")
     private Long categoryId;
+    
+    @NotNull(message = "Status is required")
     private Long statusId;
+
+    @NotNull(message = "User ID is required")
     private Long userId;
 
     public ReportDTO() {}

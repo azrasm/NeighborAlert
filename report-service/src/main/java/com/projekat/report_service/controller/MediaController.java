@@ -4,6 +4,9 @@ import com.projekat.report_service.dto.MediaDTO;
 import com.projekat.report_service.model.Media;
 import com.projekat.report_service.repository.MediaRepository;
 import com.projekat.report_service.repository.ReportRepository;
+
+import jakarta.validation.Valid;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,7 +39,7 @@ public class MediaController {
 
     // 2. POST - Dodaj medij za određenu prijavu
     @PostMapping
-    public ResponseEntity<MediaDTO> addMedia(@RequestBody MediaDTO mediaDTO) {
+    public ResponseEntity<MediaDTO> addMedia(@Valid @RequestBody MediaDTO mediaDTO) {
         Media media = modelMapper.map(mediaDTO, Media.class);
 
         // Povezivanje sa prijavom preko ID-a iz DTO-a

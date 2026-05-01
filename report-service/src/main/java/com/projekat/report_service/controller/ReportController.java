@@ -5,6 +5,9 @@ import com.projekat.report_service.model.Report;
 import com.projekat.report_service.repository.ReportRepository;
 import com.projekat.report_service.repository.CategoryRepository;
 import com.projekat.report_service.repository.StatusRepository;
+
+import jakarta.validation.Valid;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,7 +52,7 @@ public class ReportController {
 
     // 3. POST - Kreiranje novog izvještaja 
     @PostMapping
-    public ResponseEntity<ReportDTO> createReport(@RequestBody ReportDTO reportDTO) {
+    public ResponseEntity<ReportDTO> createReport(@Valid @RequestBody ReportDTO reportDTO) {
         Report report = modelMapper.map(reportDTO, Report.class);
 
         if (reportDTO.getCategoryId() != null) {
