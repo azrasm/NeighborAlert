@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/administration")
@@ -30,4 +31,9 @@ public class AdministrationController {
         StatusHistory result = administrationService.updateStatus(dto);
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/assignments")
+public ResponseEntity<List<ReportAssignment>> getAllAssignments() {
+    List<ReportAssignment> assignments = administrationService.getAllAssignments();
+    return ResponseEntity.ok(assignments);
+}
 }

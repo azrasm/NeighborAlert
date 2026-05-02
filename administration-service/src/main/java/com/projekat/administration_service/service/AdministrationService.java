@@ -8,6 +8,7 @@ import com.projekat.administration_service.repository.ReportAssignmentRepository
 import com.projekat.administration_service.repository.StatusHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 import java.time.LocalDateTime;
 
@@ -41,7 +42,7 @@ public StatusHistory updateStatus(StatusHistoryDTO dto) {
         history.setNewStatus(dto.getNewStatus());
         history.setComment(dto.getComment());
         
-        // Automatski postavljamo trenutno vreme
+        // Automatski postavljamo trenutno vrijeme
         history.setChangeDate(LocalDateTime.now());
         
         // Za početak postavljamo fiksni stari status, 
@@ -50,4 +51,8 @@ public StatusHistory updateStatus(StatusHistoryDTO dto) {
 
         return statusHistoryRepository.save(history);
     }
+
+    public List<ReportAssignment> getAllAssignments() {
+    return reportAssignmentRepository.findAll();
+}
 }
