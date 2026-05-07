@@ -7,9 +7,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.projekat.interaction_service.model.Comment;
 import com.projekat.interaction_service.model.ReportFlag;
-import com.projekat.interaction_service.repository.CommentRepository;
 import com.projekat.interaction_service.repository.ReportFlagRepository;
 
 import org.springframework.http.HttpStatus;
