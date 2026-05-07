@@ -1,6 +1,8 @@
 package com.projekat.interaction_service.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "report")
@@ -9,11 +11,14 @@ public class ReportFlag {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Reason for flagging cannot be empty")
     private String reason;
 
+    @NotNull(message = "Report ID is mandatory")
     @Column(name = "report_id")
     private Long reportId;
 
+    @NotNull(message = "User ID is mandatory")
     @Column(name = "user_id")
     private Long userId;
 

@@ -25,20 +25,19 @@ public class DataLoader implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         // Dodavanje komentara
-        Comment komentar = new Comment();
-        komentar.setText("Test komentar...");
-        commentRepository.save(komentar);
+        commentRepository.save(new Comment(1L, 1L, "Komentar 1"));
+        commentRepository.save(new Comment(1L, 2L, "Komentar 2"));
+        commentRepository.save(new Comment(2L, 1L, "Komentar 3"));
 
         // Dodavanje notifikacije
-        Notification notifikacija = new Notification();
-        notifikacija.setMessage("Test notifikacija...");
-        notificationRepository.save(notifikacija);
+        notificationRepository.save(new Notification(1L, "Notifikacija 1"));
+        notificationRepository.save(new Notification(2L, "Notifikacija 2"));
+        notificationRepository.save(new Notification(3L, "Notifikacija 3"));
 
         // Dodavanje repot flag
-        ReportFlag rf = new ReportFlag();
-        rf.setReason("Test razlog");
-        rf.setReviewed(Boolean.TRUE);
-        reportFlagRepository.save(rf);
+        reportFlagRepository.save(new ReportFlag("Reason 1", 1L, 1L, true));
+        reportFlagRepository.save(new ReportFlag("Reason 2", 2L, 2L, true));
+        reportFlagRepository.save(new ReportFlag("Reason 3", 3L, 3L, false));
 
         System.out.println("Podaci su ucitani u db");
     }
