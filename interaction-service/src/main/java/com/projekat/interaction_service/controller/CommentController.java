@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RestController
 @RequestMapping("/api/comments")
 @Tag(name = "Comments", description = "Comments of reports APIs")
-class CommentController {
+public class CommentController {
 
     @Autowired
     private CommentService commentService;
