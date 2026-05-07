@@ -52,7 +52,18 @@ public StatusHistory updateStatus(StatusHistoryDTO dto) {
         return statusHistoryRepository.save(history);
     }
 
+   // Izmijenjena metoda da koristi optimizaciju (N+1 rješenje)
     public List<ReportAssignment> getAllAssignments() {
-    return reportAssignmentRepository.findAll();
+        return reportAssignmentRepository.findAllOptimized();
+    }
+
+    public List<ReportAssignment> getAssignmentsByAdmin(Long adminId) {
+        return reportAssignmentRepository.findByAdminId(adminId);
+    }
+    public void deleteAssignment(Long id) {
+    if (!reportAssignmentRepository.existsById(id)) {
+        throw new RuntimeException("Assignment with ID " + id + " not found.");
+    }
+    reportAssignmentRepository.deleteById(id);
 }
 }

@@ -36,4 +36,17 @@ public ResponseEntity<List<ReportAssignment>> getAllAssignments() {
     List<ReportAssignment> assignments = administrationService.getAllAssignments();
     return ResponseEntity.ok(assignments);
 }
+    @GetMapping("/all")
+public ResponseEntity<List<ReportAssignment>> getAll() {
+    return ResponseEntity.ok(administrationService.getAllAssignments());
+}
+    @GetMapping("/admin/{adminId}")
+public ResponseEntity<List<ReportAssignment>> getByAdmin(@PathVariable Long adminId) {
+    return ResponseEntity.ok(administrationService.getAssignmentsByAdmin(adminId));
+}
+@DeleteMapping("/{id}")
+public ResponseEntity<Void> delete(@PathVariable Long id) {
+    administrationService.deleteAssignment(id);
+    return ResponseEntity.noContent().build(); // Vraća 204 status
+}
 }
