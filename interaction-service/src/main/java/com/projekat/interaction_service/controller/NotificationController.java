@@ -13,8 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projekat.interaction_service.model.Notification;
 import com.projekat.interaction_service.service.NotificationService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/notifications")
+@Tag(name = "Notifications", description = "Notification managment APIs")
 public class NotificationController {
 
     @Autowired
@@ -22,12 +26,14 @@ public class NotificationController {
 
     // GET /api/notifications/user/{userId}
     @GetMapping("/user/{userId}")
+    @Operation(summary = "Gets all notifications of a user")
     public List<Notification> getNotificationsByUser(@PathVariable Long userId) {
         return notificationService.getNotificationsByUserId(userId);
     }
 
     // DELETE /api/notifications/{id}
     @DeleteMapping("/{id}")
+    @Operation(summary = "Deletes a notification")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);
         return ResponseEntity.noContent().build();
