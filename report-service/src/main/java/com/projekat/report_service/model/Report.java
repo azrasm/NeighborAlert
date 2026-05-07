@@ -2,7 +2,8 @@ package com.projekat.report_service.model;
 
 import jakarta.persistence.*;
 import java.util.List;
-
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 //import com.projekat.report_service.model.Media;
 
 @Entity
@@ -13,20 +14,26 @@ public class Report {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Title is mandatory")
     private String title;
 
+    @NotBlank(message = "Description is mandatory")
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @NotBlank(message = "Address is mandatory")
     private String address; 
 
+    @NotNull(message = "User ID mandatory")
     @Column(name = "user_id")
     private Long userId; 
 
+    @NotNull(message = "Category is mandatory")
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @NotNull(message = "Status is mandatory")
     @ManyToOne
     @JoinColumn(name = "status_id")
     private Status status;
