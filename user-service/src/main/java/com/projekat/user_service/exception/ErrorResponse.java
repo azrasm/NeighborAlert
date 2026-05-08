@@ -2,6 +2,7 @@ package com.projekat.user_service.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+
 import java.util.Map;
 
 @Data
@@ -9,5 +10,5 @@ import java.util.Map;
 public class ErrorResponse {
     private String error;
     private String message;
-    private Map<String, String> details; // Za validacione greške
+    private Map<String, String> details;
 }

@@ -5,12 +5,13 @@ import lombok.Data;
 
 @Data
 public class UserCreateDTO {
+
     @NotBlank(message = "Username je obavezan")
-    @Size(min = 3, max = 20)
+    @Size(min = 3, max = 20, message = "Username mora biti između 3 i 20 karaktera")
     private String username;
 
     @NotBlank(message = "Password je obavezan")
-    @Size(min = 6)
+    @Size(min = 6, message = "Password mora imati najmanje 6 karaktera")
     private String password;
 
     @Email(message = "Email format nije ispravan")
