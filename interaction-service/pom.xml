@@ -148,6 +148,14 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+		<!-- Json-patch -->
+	<dependency>
+    	<groupId>com.github.fge</groupId>
+    	<artifactId>json-patch</artifactId>
+    	<version>1.9</version>
+    	<scope>compile</scope>
+	</dependency>
+
 	</dependencies>
 
 	<build>

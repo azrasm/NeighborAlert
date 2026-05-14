@@ -29,7 +29,9 @@ public class GlobalExceptionHandler {
     // 3. Hvatanje svih OSTALIH neočekivanih grešaka
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralError(Exception ex) {
+        ex.printStackTrace(); 
         ErrorResponse error = new ErrorResponse("server_error", "An unexpected error occurred");
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+
     }
 }
