@@ -34,11 +34,12 @@ public class DataLoader implements CommandLineRunner {
         testReport.setTitle("Velika rupa - Otoka");
         testReport.setDescription("Rupa duboka 20cm na glavnoj raskrsnici.");
         testReport.setAddress("Bulevar Meše Selimovića");
+        
+        testReport.setUserId(1L); 
+        
         testReport.setCategory(rupa);
         testReport.setStatus(prijavljeno);
         
         reportRepository.save(testReport);
-
-        System.out.println("Podaci su uspješno učitani u bazu!");
     }
 }
