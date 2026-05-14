@@ -21,21 +21,39 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. Dodajemo zaduzenja (ReportAssignments)
-        // Pretpostavljamo da report_id 101 i 102 postoje u drugom servisu
-        assignmentRepository.save(new ReportAssignment(101L, "Komunalna Služba", "Potrebno hitno izaći na teren.", 2L));
-        assignmentRepository.save(new ReportAssignment(102L, "Vodovod", "Provjeriti cijevi u ulici.", 2L));
+        // 1. Dodajemo zaduženja koristeći Builder (Lombok)
+        assignmentRepository.save(ReportAssignment.builder()
+                .reportId(101L)
+                .service("Komunalna Služba")
+                .note("Potrebno hitno izaći na teren.")
+                .adminId(2L)
+                .build());
 
-        // 2. Dodajemo historiju statusa (StatusHistory)
-        historyRepository.save(new StatusHistory(
-            101L, 2L, "PENDING", "IN_PROGRESS", 
-            LocalDateTime.now().minusDays(1), "Započeta obrada prijave."
-        ));
+        assignmentRepository.save(ReportAssignment.builder()
+                .reportId(102L)
+                .service("Vodovod")
+                .note("Provjeriti cijevi u ulici.")
+                .adminId(2L)
+                .build());
 
-        historyRepository.save(new StatusHistory(
-            101L, 2L, "IN_PROGRESS", "RESOLVED", 
-            LocalDateTime.now(), "Problem uspješno riješen."
-        ));
+        // 2. Dodajemo historiju statusa koristeći Builder (Lombok)
+        historyRepository.save(StatusHistory.builder()
+                .reportId(101L)
+                .adminId(2L)
+                .oldStatus("PENDING")
+                .newStatus("IN_PROGRESS")
+                .changeDate(LocalDateTime.now().minusDays(1))
+                .comment("Započeta obrada prijave.")
+                .build());
+
+        historyRepository.save(StatusHistory.builder()
+                .reportId(101L)
+                .adminId(2L)
+                .oldStatus("IN_PROGRESS")
+                .newStatus("RESOLVED")
+                .changeDate(LocalDateTime.now())
+                .comment("Problem uspješno riješen.")
+                .build());
 
         System.out.println(">>> Administration Service: Podaci za zaduženja i historiju su učitani!");
     }
