@@ -14,9 +14,16 @@ public class GlobalExceptionHandler {
         return new ErrorResponse("validation_error", msg);
     }
 
-    @ExceptionHandler(Exception.class)
+   /*  @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleAllExceptions(Exception ex) {
         return new ErrorResponse("server_error", "Došlo je do neočekivane greške na serveru.");
+    }
+        */
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleAllExceptions(Exception ex) {
+        ex.printStackTrace(); 
+        return new ErrorResponse("server_error", ex.getMessage());
     }
 }

@@ -12,9 +12,7 @@ public class GlobalExceptionHandler {
     // 1. Hvatanje grešaka VALIDACIJE (npr. prazan tekst komentara)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
-        // Uzimamo prvu grešku iz liste validacijskih grešaka
         String errorMessage = ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
-        
         ErrorResponse error = new ErrorResponse("validation_error", errorMessage);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -26,7 +24,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    // 3. Hvatanje svih OSTALIH neočekivanih grešaka
+    // 3. Hvatanje greške kada zavisni MIKROSERVIS NIJE DOSTUPAN (zadatak 5f)
+    //    Vraća 503 Service Unavailable — klijent zna da problem nije u njemu,
+    //    a interaction-service ostaje aktivan i obrađuje ostale zahtjeve.
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleServiceUnavailable(ServiceUnavailableException ex) {
+        ErrorResponse error = new ErrorResponse("service_unavailable", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    // 4. Hvatanje svih OSTALIH neočekivanih grešaka
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralError(Exception ex) {
         ErrorResponse error = new ErrorResponse("server_error", "An unexpected error occurred");

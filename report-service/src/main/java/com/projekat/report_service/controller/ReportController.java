@@ -26,6 +26,15 @@ public class ReportController {
         return reportService.getAllReports();
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ReportDTO> getReportById(@PathVariable Long id) {
+        ReportDTO reportDTO = reportService.getReportById(id);
+        if (reportDTO != null) {
+            return ResponseEntity.ok(reportDTO);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     ///api/reports/paged?page=0&size=5&sortBy=title
     @GetMapping("/paged")
     public ResponseEntity<Page<ReportDTO>> getReportsPaged(
@@ -50,4 +59,5 @@ public class ReportController {
         }
         return ResponseEntity.notFound().build();
     }
+    
 }

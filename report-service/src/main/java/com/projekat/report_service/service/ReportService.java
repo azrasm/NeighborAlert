@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.lang.NonNull; 
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,9 +29,15 @@ public class ReportService {
                 .collect(Collectors.toList());
     }
 
-    public Page<ReportDTO> getAllReportsPaged(Pageable pageable) {
+    public Page<ReportDTO> getAllReportsPaged(@NonNull Pageable pageable) {
         return reportRepository.findAll(pageable)
                 .map(report -> modelMapper.map(report, ReportDTO.class));
+    }
+
+    public ReportDTO getReportById(@NonNull Long id) {
+    return reportRepository.findById(id)
+            .map(report -> modelMapper.map(report, ReportDTO.class))
+            .orElse(null); 
     }
 
     @Transactional 
@@ -41,7 +48,7 @@ public class ReportService {
     }
 
     @Transactional 
-    public boolean deleteReport(Long id) {
+    public boolean deleteReport(@NonNull Long id) {
         if (reportRepository.existsById(id)) {
             reportRepository.deleteById(id);
             return true;
