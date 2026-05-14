@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "AdministrationServiceApplication",
+            "request": "launch",
+            "mainClass": "com.projekat.administration_service.AdministrationServiceApplication",
+            "projectName": "administration-service"
+        },
+        {
+            "type": "java",
             "name": "EurekaServerApplication",
             "request": "launch",
             "mainClass": "com.projekat.eureka_server.EurekaServerApplication",

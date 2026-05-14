@@ -1,9 +1,17 @@
 package com.projekat.administration_service.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "report_assignments")
+@Data               // Zamjenjuje sve getere, setere, toString, equals i hashCode
+@NoArgsConstructor  // Zamjenjuje prazan konstruktor public ReportAssignment() {}
+@AllArgsConstructor // Zamjenjuje konstruktor sa svim poljima
+@Builder
 public class ReportAssignment {
 
     @Id
@@ -20,29 +28,4 @@ public class ReportAssignment {
 
     @Column(name = "admin_id")
     private Long adminId;
-
-    public ReportAssignment() {}
-
-    public ReportAssignment(Long reportId, String service, String note, Long adminId) {
-        this.reportId = reportId;
-        this.service = service;
-        this.note = note;
-        this.adminId = adminId;
-    }
-
-    // geteri i seteri
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public Long getReportId() { return reportId; }
-    public void setReportId(Long reportId) { this.reportId = reportId; }
-
-    public String getService() { return service; }
-    public void setService(String service) { this.service = service; }
-
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
-
-    public Long getAdminId() { return adminId; }
-    public void setAdminId(Long adminId) { this.adminId = adminId; }
 }
