@@ -7,7 +7,12 @@ import com.projekat.administration_service.model.StatusHistory;
 import com.projekat.administration_service.repository.ReportAssignmentRepository;
 import com.projekat.administration_service.repository.StatusHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import java.time.LocalDateTime;
@@ -65,5 +70,25 @@ public StatusHistory updateStatus(StatusHistoryDTO dto) {
         throw new RuntimeException("Assignment with ID " + id + " not found.");
     }
     reportAssignmentRepository.deleteById(id);
+}
+public Page<ReportAssignment> getAllPaged(int page, int size, String sortBy) {
+    Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
+    return reportAssignmentRepository.findAll(pageable);
+}
+@Transactional 
+public ReportAssignment assignAndLogStatus(ReportAssignmentDTO dto) {
+    // 1. Kreiraj dodjelu
+    ReportAssignment ra = new ReportAssignment();
+    ra.setReportId(dto.getReportId());
+    ra.setAdminId(dto.getAdminId());
+    ReportAssignment saved = reportAssignmentRepository.save(ra);
+
+    // 2. Automatski kreiraj zapis u istoriji (drugi repozitorij)
+    StatusHistory history = new StatusHistory();
+    history.setReportId(dto.getReportId());
+    history.setNewStatus("ASSIGNED");
+    statusHistoryRepository.save(history);
+
+    return saved;
 }
 }

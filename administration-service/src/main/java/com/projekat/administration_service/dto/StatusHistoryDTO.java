@@ -1,29 +1,24 @@
 package com.projekat.administration_service.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class StatusHistoryDTO {
+
+    @NotNull(message = "ID prijave ne smije biti null")
     private Long reportId;
+
+    @NotNull(message = "ID administratora ne smije biti null")
     private Long adminId;
+
+    @NotBlank(message = "Novi status je obavezan")
     private String newStatus;
-    private String comment;
 
-    public StatusHistoryDTO() {}
-
-    public StatusHistoryDTO(Long reportId, Long adminId, String newStatus, String comment) {
-        this.reportId = reportId;
-        this.adminId = adminId;
-        this.newStatus = newStatus;
-        this.comment = comment;
-    }
-
-    public Long getReportId() { return reportId; }
-    public void setReportId(Long reportId) { this.reportId = reportId; }
-
-    public Long getAdminId() { return adminId; }
-    public void setAdminId(Long adminId) { this.adminId = adminId; }
-
-    public String getNewStatus() { return newStatus; }
-    public void setNewStatus(String newStatus) { this.newStatus = newStatus; }
-
-    public String getComment() { return comment; }
-    public void setComment(String comment) { this.comment = comment; }
+    private String comment; 
 }

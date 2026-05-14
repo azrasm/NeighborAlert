@@ -10,8 +10,9 @@ import java.util.List;
 public interface ReportAssignmentRepository extends JpaRepository<ReportAssignment, Long> {
 
     // Ova metoda rješava N+1 problem i služi za tvoj "2. GET /all" endpoint
-    @Query("SELECT ra FROM ReportAssignment ra")
+ @Query("SELECT ra FROM ReportAssignment ra")
     List<ReportAssignment> findAllOptimized();
 
     List<ReportAssignment> findByAdminId(Long adminId);
+
 }

@@ -20,14 +20,22 @@ public class GlobalExceptionHandler {
                 .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
                 .collect(Collectors.joining(", "));
 
+        // Koristimo konstruktor koji je Lombok napravio
         ErrorResponse response = new ErrorResponse("validation_error", errorMessage);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // 2. Hvatanje svih ostalih generičkih grešaka
+    // 2. Hvatanje specifičnih runtime grešaka (opcionalno ali korisno)
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntime(RuntimeException ex) {
+        ErrorResponse response = new ErrorResponse("runtime_error", ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // 3. Hvatanje svih ostalih generičkih grešaka
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex) {
-        ErrorResponse response = new ErrorResponse("internal_error", "An unexpected error occurred");
+        ErrorResponse response = new ErrorResponse("internal_error", "An unexpected error occurred: " + ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

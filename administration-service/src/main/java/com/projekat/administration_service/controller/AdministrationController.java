@@ -9,6 +9,9 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+
+
 import java.util.List;
 
 @RestController
@@ -21,7 +24,7 @@ public class AdministrationController {
     // Endpoint za dodjelu prijave
     @PostMapping("/assign")
     public ResponseEntity<ReportAssignment> assignReport(@Valid @RequestBody ReportAssignmentDTO dto) {
-        ReportAssignment result = administrationService.assignReport(dto);
+        ReportAssignment result = administrationService.assignAndLogStatus(dto);
         return ResponseEntity.ok(result);
     }
 
@@ -48,5 +51,13 @@ public ResponseEntity<List<ReportAssignment>> getByAdmin(@PathVariable Long admi
 public ResponseEntity<Void> delete(@PathVariable Long id) {
     administrationService.deleteAssignment(id);
     return ResponseEntity.noContent().build(); // Vraća 204 status
+}
+//PAGINACIJA
+@GetMapping("/paged")
+public ResponseEntity<Page<ReportAssignment>> getAllPaged(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id") String sortBy) {
+    return ResponseEntity.ok(administrationService.getAllPaged(page, size, sortBy));
 }
 }
