@@ -5,7 +5,7 @@ Skripta za testiranje load balancinga na user-service.
 Pokretanje:
   1. Pokreni Eureka server na portu 8761
   2. Pokreni prvu instancu user-service:  java -jar user-service.jar --server.port=8081
-  3. Pokreni drugu instancu user-service: java -jar user-service.jar --server.port=8082
+  3. Pokreni drugu instancu user-service: java -jar user-service.jar --server.port=8085
   4. Pokreni ovu skriptu: python3 load_balance_test.py
 
 Skripta šalje 100 zahtjeva direktno na svaku instancu i mjeri vrijeme,
@@ -17,7 +17,7 @@ import time
 import statistics
 
 INSTANCE_1 = "http://localhost:8081"
-INSTANCE_2 = "http://localhost:8082"
+INSTANCE_2 = "http://localhost:8085"
 ENDPOINT    = "/api/users"
 NUM_REQUESTS = 100
 
@@ -81,7 +81,7 @@ def round_robin_test(n: int = 100) -> None:
     total_successful = instance1_count + instance2_count
     print(f"\nRezultati distribucije:")
     print(f"  Instanca 1 (:{8081}): {instance1_count} zahtjeva ({instance1_count/total_successful*100:.1f}%)")
-    print(f"  Instanca 2 (:{8082}): {instance2_count} zahtjeva ({instance2_count/total_successful*100:.1f}%)")
+    print(f"  Instanca 2 (:{8085}): {instance2_count} zahtjeva ({instance2_count/total_successful*100:.1f}%)")
     print(f"  Greške: {errors}")
     print(f"\nVrijeme odgovora (load balanced):")
     print(f"  Prosječno: {statistics.mean(times):.2f} ms")
