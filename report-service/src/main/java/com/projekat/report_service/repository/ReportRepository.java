@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
-    
+
     @Query("SELECT r FROM Report r LEFT JOIN FETCH r.category LEFT JOIN FETCH r.status")
-    List<Report> findAllWithDetails();
+    List<Report> findAllWithOptimizedFetch();
 }

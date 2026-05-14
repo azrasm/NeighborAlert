@@ -1,17 +1,18 @@
 package com.projekat.report_service.controller;
 
 import com.projekat.report_service.dto.ReportDTO;
-import com.projekat.report_service.model.Report;
 import com.projekat.report_service.service.ReportService;
 import jakarta.validation.Valid;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -20,30 +21,26 @@ public class ReportController {
     @Autowired
     private ReportService reportService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     @GetMapping
     public List<ReportDTO> getAllReports() {
-        return reportService.getAllReports().stream()
-                .map(report -> modelMapper.map(report, ReportDTO.class))
-                .collect(Collectors.toList());
+        return reportService.getAllReports();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ReportDTO> getReportById(@PathVariable Long id) {
-        return reportService.getReportById(id)
-                .map(report -> ResponseEntity.ok(modelMapper.map(report, ReportDTO.class)))
-                .orElse(ResponseEntity.notFound().build());
+    ///api/reports/paged?page=0&size=5&sortBy=title
+    @GetMapping("/paged")
+    public ResponseEntity<Page<ReportDTO>> getReportsPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return ResponseEntity.ok(reportService.getAllReportsPaged(pageable));
     }
 
     @PostMapping
     public ResponseEntity<ReportDTO> createReport(@Valid @RequestBody ReportDTO reportDTO) {
-        Report reportRequest = modelMapper.map(reportDTO, Report.class);
-        
-        Report savedReport = reportService.createReport(reportRequest, reportDTO.getCategoryId(), reportDTO.getStatusId());
-        
-        return new ResponseEntity<>(modelMapper.map(savedReport, ReportDTO.class), HttpStatus.CREATED);
+        ReportDTO savedReport = reportService.saveReport(reportDTO);
+        return new ResponseEntity<>(savedReport, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

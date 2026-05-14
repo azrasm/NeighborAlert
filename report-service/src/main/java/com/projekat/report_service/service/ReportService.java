@@ -1,14 +1,17 @@
 package com.projekat.report_service.service;
 
+import com.projekat.report_service.dto.ReportDTO;
 import com.projekat.report_service.model.Report;
 import com.projekat.report_service.repository.ReportRepository;
-import com.projekat.report_service.repository.CategoryRepository;
-import com.projekat.report_service.repository.StatusRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportService {
@@ -17,29 +20,27 @@ public class ReportService {
     private ReportRepository reportRepository;
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private ModelMapper modelMapper;
 
-    @Autowired
-    private StatusRepository statusRepository;
-
-    public List<Report> getAllReports() {
-        return reportRepository.findAllWithDetails();
+    public List<ReportDTO> getAllReports() {
+        return reportRepository.findAll().stream()
+                .map(report -> modelMapper.map(report, ReportDTO.class))
+                .collect(Collectors.toList());
     }
 
-    public Optional<Report> getReportById(Long id) {
-        return reportRepository.findById(id);
+    public Page<ReportDTO> getAllReportsPaged(Pageable pageable) {
+        return reportRepository.findAll(pageable)
+                .map(report -> modelMapper.map(report, ReportDTO.class));
     }
 
-    public Report createReport(Report report, Long categoryId, Long statusId) {
-        if (categoryId != null) {
-            categoryRepository.findById(categoryId).ifPresent(report::setCategory);
-        }
-        if (statusId != null) {
-            statusRepository.findById(statusId).ifPresent(report::setStatus);
-        }
-        return reportRepository.save(report);
+    @Transactional 
+    public ReportDTO saveReport(ReportDTO reportDTO) {
+        Report report = modelMapper.map(reportDTO, Report.class);
+        Report savedReport = reportRepository.save(report);
+        return modelMapper.map(savedReport, ReportDTO.class);
     }
 
+    @Transactional 
     public boolean deleteReport(Long id) {
         if (reportRepository.existsById(id)) {
             reportRepository.deleteById(id);
