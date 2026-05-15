@@ -51,6 +51,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Provjera postoji li email
     boolean existsByEmail(String email);
 
+    // Pronalazi korisnika po usernameu — koristi se pri login-u
+    @EntityGraph(value = "User.withRole")
+    Optional<User> findByUsername(String username);
+
     // Bulk ažuriranje score-a za sve korisnike određene role
     @Modifying
     @Query("UPDATE User u SET u.userScore = u.userScore + :bonus WHERE u.role.id = :roleId")

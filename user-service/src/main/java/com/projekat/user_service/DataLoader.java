@@ -7,6 +7,7 @@ import com.projekat.user_service.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +17,7 @@ public class DataLoader implements CommandLineRunner {
 
     private final UserRoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
@@ -24,16 +26,21 @@ public class DataLoader implements CommandLineRunner {
             UserRole user  = roleRepository.save(new UserRole("USER"));
             UserRole mod   = roleRepository.save(new UserRole("MODERATOR"));
 
-            userRepository.save(User.builder().username("admin").password("admin123")
+            // Lozinke su hashirane BCryptom — nikad ne čuvati plain text
+            userRepository.save(User.builder().username("admin")
+                    .password(passwordEncoder.encode("admin123"))
                     .email("admin@neighboralert.ba").userScore(100).role(admin).build());
-            userRepository.save(User.builder().username("marko").password("lozinka123")
+            userRepository.save(User.builder().username("marko")
+                    .password(passwordEncoder.encode("lozinka123"))
                     .email("marko@test.com").userScore(55).role(user).build());
-            userRepository.save(User.builder().username("ana").password("lozinka123")
+            userRepository.save(User.builder().username("ana")
+                    .password(passwordEncoder.encode("lozinka123"))
                     .email("ana@test.com").userScore(30).role(user).build());
-            userRepository.save(User.builder().username("moderator1").password("mod123")
+            userRepository.save(User.builder().username("moderator1")
+                    .password(passwordEncoder.encode("mod123"))
                     .email("mod@neighboralert.ba").userScore(80).role(mod).build());
 
-            log.info("Inicijalni podaci uspješno učitani.");
+            log.info("Inicijalni podaci uspješno učitani (lozinke hashirane BCryptom).");
         }
     }
 }

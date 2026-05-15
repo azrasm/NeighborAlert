@@ -48,6 +48,14 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse("not_found", ex.getMessage(), null));
     }
 
+    /** 401 - pogrešan username ili lozinka pri login-u */
+    @ExceptionHandler(com.projekat.user_service.auth.AuthException.class)
+    public ResponseEntity<ErrorResponse> handleAuthException(
+            com.projekat.user_service.auth.AuthException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("unauthorized", ex.getMessage(), null));
+    }
+
     /** Poslovne greške (dupli username, nedovoljno bodova, itd.) */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {

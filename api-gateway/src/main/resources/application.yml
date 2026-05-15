@@ -1,0 +1,88 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # Globalni CORS — dozvoljava pozive iz browsera/mobilnih aplikacija
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+      routes:
+        # ── user-service ──────────────────────────────────────────────
+        # /api/auth/** — javni endpoint (login, register) — BEZ JWT provjere
+        - id: user-service-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
+
+        # /api/users/** — zaštićen, zahtijeva JWT
+        - id: user-service-users
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - JwtAuthFilter
+
+        # ── report-service ────────────────────────────────────────────
+        - id: report-service
+          uri: lb://report-service
+          predicates:
+            - Path=/api/reports/**
+          filters:
+            - JwtAuthFilter
+
+        # ── interaction-service ───────────────────────────────────────
+        - id: interaction-service
+          uri: lb://interaction-service
+          predicates:
+            - Path=/api/comments/**, /api/notifications/**, /api/flags/**
+          filters:
+            - JwtAuthFilter
+
+        # ── administration-service ────────────────────────────────────
+        - id: administration-service
+          uri: lb://administration-service
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - JwtAuthFilter
+
+# JWT tajni ključ — mora biti identičan kao u user-service
+# U produkciji: čuvati u environment varijabli ili vault-u, nikad u kodu
+jwt:
+  secret: NeighborAlertSecretKeyKojaMoraBitiDovoljnoDugaZaHS256Algorithm2024
+
+# Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
