@@ -66,6 +66,10 @@ public class ReportControllerTest {
         ReportDTO inputDto = new ReportDTO();
         inputDto.setTitle("Nova prijava");
         inputDto.setDescription("Opis prijave koji je dovoljno dug");
+        inputDto.setAddress("Zmaja od Bosne 15");
+        inputDto.setUserId(5L);
+        inputDto.setCategoryId(1L);  
+        inputDto.setStatusId(1L);
 
         when(reportService.saveReport(any(ReportDTO.class))).thenReturn(inputDto);
 
