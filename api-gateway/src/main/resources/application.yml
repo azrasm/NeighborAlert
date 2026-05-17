@@ -25,42 +25,55 @@ spring:
           filters:
             - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
 
-        # /api/users/** — zaštićen, zahtijeva JWT
+        # /api/users/** — zasticen, zahtijeva JWT, svi autentifikovani korisnici
         - id: user-service-users
           uri: lb://user-service
           predicates:
             - Path=/api/users/**
           filters:
-            - JwtAuthFilter
+            - name: JwtAuthFilter
+              args:
+                roles: ""
 
         # ── report-service ────────────────────────────────────────────
+        # Svi autentifikovani korisnici mogu pristupiti izvjestajima
         - id: report-service
           uri: lb://report-service
           predicates:
             - Path=/api/reports/**
           filters:
-            - JwtAuthFilter
+            - name: JwtAuthFilter
+              args:
+                roles: ""
 
         # ── interaction-service ───────────────────────────────────────
+        # Svi autentifikovani korisnici mogu komentarisati, flagovati itd.
         - id: interaction-service
           uri: lb://interaction-service
           predicates:
             - Path=/api/comments/**, /api/notifications/**, /api/flags/**
           filters:
-            - JwtAuthFilter
+            - name: JwtAuthFilter
+              args:
+                roles: ""
 
         # ── administration-service ────────────────────────────────────
+        # Samo ADMIN rola ima pristup administrativnim endpointima
         - id: administration-service
           uri: lb://administration-service
           predicates:
             - Path=/api/admin/**
           filters:
-            - JwtAuthFilter
+            - name: JwtAuthFilter
+              args:
+                roles: ADMIN
 
-# JWT tajni ključ — mora biti identičan kao u user-service
-# U produkciji: čuvati u environment varijabli ili vault-u, nikad u kodu
+# JWT konfiguracija — asimetricna enkripcija (RS256)
+# Gateway koristi JAVNI kljuc za verifikaciju tokena.
+# Odgovara privatnom kljucu u user-service.
+# U produkciji: cuvati u environment varijabli ili vault-u, nikad commitovati u git!
 jwt:
-  secret: NeighborAlertSecretKeyKojaMoraBitiDovoljnoDugaZaHS256Algorithm2024
+  public-key-file: src/main/resources/public_key.pem
 
 # Eureka
 eureka:
