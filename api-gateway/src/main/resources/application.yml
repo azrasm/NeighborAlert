@@ -62,7 +62,7 @@ spring:
         - id: administration-service
           uri: lb://administration-service
           predicates:
-            - Path=/api/admin/**
+            - Path=/api/administration/**
           filters:
             - name: JwtAuthFilter
               args:
