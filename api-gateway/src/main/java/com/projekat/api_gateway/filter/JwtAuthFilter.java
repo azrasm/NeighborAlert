@@ -17,22 +17,25 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Gateway filter koji provjerava JWT token za svaki zaštićeni endpoint.
+ * Gateway filter koji provjerava JWT token za svaki zasticeni endpoint.
  *
  * Tok provjere:
  *   1. Postoji li Authorization header?
- *   2. Počinje li s "Bearer "?
- *   3. Je li token validan (potpis, expiration)?
- *   4. Ako sve prođe → proslijedi zahtjev mikroservisu + dodaj X-Username i X-Role headere
- *   5. Ako ne prođe → vrati 401 Unauthorized
+ *   2. Pocinje li s "Bearer "?
+ *   3. Je li token validan (potpis RS256, expiration)?
+ *   4. Ima li korisnik potrebnu rolu (ako su role konfigurisane za rutu)?
+ *   5. Ako sve prodje → proslije zahtjev mikroservisu + dodaj X-Username, X-Role, X-User-Id headere
+ *   6. Ako ne prodje → vrati 401 Unauthorized ili 403 Forbidden
  *
- * Mikroservisi dobijaju X-Username i X-Role headere od gateway-a —
- * ne moraju sami parsirati JWT, gateway je već to uradio.
+ * Mikroservisi dobijaju X-Username, X-Role i X-User-Id headere od gateway-a —
+ * ne moraju sami parsirati JWT, gateway je vec to uradio.
  *
  * Napomena: Spring Cloud Gateway koristi WebFlux (reaktivni stack),
- * pa filter mora biti reaktivan (vraća Mono<Void>).
+ * pa filter mora biti reaktivan (vraca Mono<Void>).
  */
 @Component
 public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Config> {
@@ -71,11 +74,18 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                 String username = claims.getSubject();
                 String role = claims.get("role", String.class);
 
+                // 4. Provjera autorizacije po rolama
+                if (!config.getRoles().isEmpty() && !config.getRoles().contains(role)) {
+                    log.warn("[JWT] Zabranjen pristup: user='{}', role='{}', path='{}', potrebna rola: {}",
+                            username, role, path, config.getRoles());
+                    return forbiddenResponse(exchange, "Nemate pravo pristupa ovom resursu.");
+                }
+
                 log.info("[JWT] Autorizovan zahtjev: user='{}', role='{}', path='{}'",
                         username, role, path);
 
-                // 4. Proslijedi zahtjev s dodatnim headerima
-                // Mikroservisi mogu čitati ko je ulogovan bez parsiranja JWT-a
+                // 5. Proslijedi zahtjev s dodatnim headerima
+                // Mikroservisi mogu citati ko je ulogovan bez parsiranja JWT-a
                 ServerHttpRequest mutatedRequest = request.mutate()
                         .header("X-Username", username)
                         .header("X-Role", role != null ? role : "")
@@ -93,7 +103,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     }
 
     /**
-     * Vraća 401 Unauthorized odgovor s JSON porukom.
+     * Vraca 401 Unauthorized odgovor s JSON porukom.
      */
     private Mono<Void> unauthorizedResponse(ServerWebExchange exchange, String message) {
         ServerHttpResponse response = exchange.getResponse();
@@ -108,8 +118,38 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                 Mono.just(response.bufferFactory().wrap(bytes)));
     }
 
+    /**
+     * Vraca 403 Forbidden odgovor s JSON porukom.
+     */
+    private Mono<Void> forbiddenResponse(ServerWebExchange exchange, String message) {
+        ServerHttpResponse response = exchange.getResponse();
+        response.setStatusCode(HttpStatus.FORBIDDEN);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        String body = String.format(
+                "{\"error\": \"forbidden\", \"message\": \"%s\"}", message);
+        byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
+
+        return response.writeWith(
+                Mono.just(response.bufferFactory().wrap(bytes)));
+    }
+
     public static class Config {
-        // Konfiguracija filtera — za sada prazna, može se proširiti
-        // (npr. lista rola koje imaju pristup određenoj ruti)
+        // Lista rola koje imaju pristup rutama sa ovim filterom.
+        // Prazna lista = svi autentifikovani korisnici imaju pristup.
+        // Primjer u application.yml:
+        //   filters:
+        //     - name: JwtAuthFilter
+        //       args:
+        //         roles: ADMIN
+        private List<String> roles = new ArrayList<>();
+
+        public List<String> getRoles() {
+            return roles;
+        }
+
+        public void setRoles(List<String> roles) {
+            this.roles = roles;
+        }
     }
 }
