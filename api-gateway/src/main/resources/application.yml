@@ -1,0 +1,101 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      # Globalni CORS — dozvoljava pozive iz browsera/mobilnih aplikacija
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+      routes:
+        # ── user-service ──────────────────────────────────────────────
+        # /api/auth/** — javni endpoint (login, register) — BEZ JWT provjere
+        - id: user-service-auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<segment>.*), /api/auth/${segment}
+
+        # /api/users/** — zasticen, zahtijeva JWT, svi autentifikovani korisnici
+        - id: user-service-users
+          uri: lb://user-service
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                roles: ""
+
+        # ── report-service ────────────────────────────────────────────
+        # Svi autentifikovani korisnici mogu pristupiti izvjestajima
+        - id: report-service
+          uri: lb://report-service
+          predicates:
+            - Path=/api/reports/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                roles: ""
+
+        # ── interaction-service ───────────────────────────────────────
+        # Svi autentifikovani korisnici mogu komentarisati, flagovati itd.
+        - id: interaction-service
+          uri: lb://interaction-service
+          predicates:
+            - Path=/api/comments/**, /api/notifications/**, /api/flags/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                roles: ""
+
+        # ── administration-service ────────────────────────────────────
+        # Samo ADMIN rola ima pristup administrativnim endpointima
+        - id: administration-service
+          uri: lb://administration-service
+          predicates:
+            - Path=/api/administration/**
+          filters:
+            - name: JwtAuthFilter
+              args:
+                roles: ADMIN
+
+# JWT konfiguracija — asimetricna enkripcija (RS256)
+# Gateway koristi JAVNI kljuc za verifikaciju tokena.
+# Odgovara privatnom kljucu u user-service.
+# U produkciji: cuvati u environment varijabli ili vault-u, nikad commitovati u git!
+jwt:
+  public-key-file: src/main/resources/public_key.pem
+
+# Eureka
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

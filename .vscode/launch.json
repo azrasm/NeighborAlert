@@ -2,10 +2,16 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ReportServiceApplication",
+            "request": "launch",
+            "mainClass": "com.projekat.report_service.ReportServiceApplication",
+            "projectName": "report-service"
+        },
+        {
+            "type": "java",
             "name": "EurekaServerApplication",
             "request": "launch",
-            "mainClass": "com.projekat.eureka_server.EurekaServerApplication",
-            "projectName": ""
+            "mainClass": "com.projekat.eureka_server.EurekaServerApplication"
         },
         {
             "type": "java",

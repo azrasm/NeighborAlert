@@ -142,6 +142,16 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 
+		<!--
+			OpenFeign — deklarativni REST klijent za sinhronu komunikaciju.
+			Koristi Eureka load-balancer: adrese servisa se razrjesavaju
+			po imenu (spring.application.name), bez ijednog hardkodiranog IP/porta.
+		-->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+
 		<!-- Actuator za Eureka healthcheck -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

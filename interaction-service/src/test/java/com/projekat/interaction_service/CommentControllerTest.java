@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import com.projekat.interaction_service.controller.CommentController;
+import com.projekat.interaction_service.exception.ServiceUnavailableException;
 import com.projekat.interaction_service.service.CommentService;
 
 import org.springframework.http.MediaType;
@@ -20,6 +22,12 @@ import com.projekat.interaction_service.model.Comment;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Web sloj testovi za CommentController.
+ *
+ * @WebMvcTest učitava samo web kontekst — CommentService je mockovan.
+ * Testira HTTP statuse, JSON odgovore i propagaciju izuzetaka.
+ */
 @WebMvcTest(controllers = CommentController.class)
 class CommentControllerTest {
 
@@ -30,6 +38,7 @@ class CommentControllerTest {
     MockMvcTester mockMvcTester;
 
     @Test
+    @DisplayName("GET /api/comments/report/{id} — vraća listu komentara")
     void getCommentsByReportSuccessful() {
 
         Comment comment1 = new Comment();
@@ -57,6 +66,7 @@ class CommentControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/comments — 400 Bad Request za prazan tekst")
     void createCommentErrorWhenInputDataIsInvalid() {
         
         String invalidRequest = """
@@ -82,6 +92,67 @@ class CommentControllerTest {
     }
 
     @Test
+    @DisplayName("POST /api/comments — 503 kada report-service nije dostupan (Zadatak 5f)")
+    void createComment_WhenReportServiceDown_Returns503() {
+
+        when(commentService.saveComment(any(Comment.class)))
+                .thenThrow(new ServiceUnavailableException(
+                        "report-service trenutno nije dostupan. Pokušajte ponovo kasnije."));
+
+        String requestBody = """
+        {
+            "reportId": 1,
+            "userId": 5,
+            "text": "Komentar"
+        }
+        """;
+
+        assertThat(mockMvcTester.post()
+                .uri("/api/comments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .hasStatus(HttpStatus.SERVICE_UNAVAILABLE)
+                .bodyJson()
+                .isLenientlyEqualTo("""
+                {
+                    "error": "service_unavailable",
+                    "message": "report-service trenutno nije dostupan. Pokušajte ponovo kasnije."
+                }
+                """);
+    }
+
+    @Test
+    @DisplayName("POST /api/comments — 503 kada user-service nije dostupan (Zadatak 5f)")
+    void createComment_WhenUserServiceDown_Returns503() {
+
+        when(commentService.saveComment(any(Comment.class)))
+                .thenThrow(new ServiceUnavailableException(
+                        "user-service trenutno nije dostupan. Pokušajte ponovo kasnije."));
+
+        String requestBody = """
+        {
+            "reportId": 1,
+            "userId": 5,
+            "text": "Komentar"
+        }
+        """;
+
+        assertThat(mockMvcTester.post()
+                .uri("/api/comments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .hasStatus(HttpStatus.SERVICE_UNAVAILABLE)
+                .bodyJson()
+                .isLenientlyEqualTo("""
+                {
+                    "error": "service_unavailable",
+                    "message": "user-service trenutno nije dostupan. Pokušajte ponovo kasnije."
+                }
+                """);
+    }
+
+    @Test
+    @DisplayName("PUT /api/comments/{id} — ažurira komentar")
     void updateCommentSuccessful() {
 
         String requestBody = """
@@ -122,6 +193,7 @@ class CommentControllerTest {
     }
 
     @Test
+    @DisplayName("PUT /api/comments/{id} — 400 za prazan tekst")
     void updateCommentError() {
 
         String invalidRequest = """
