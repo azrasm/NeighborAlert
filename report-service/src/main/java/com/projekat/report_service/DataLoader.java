@@ -22,24 +22,33 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Category rupa = new Category();
-        rupa.setName("Oštećenje puta");
-        categoryRepository.save(rupa);
+        if (categoryRepository.count() == 0) {
+            categoryRepository.save(new Category("Oštećenje puta"));
+            categoryRepository.save(new Category("Sigurnost"));
+            categoryRepository.save(new Category("Komunalne usluge"));
+            categoryRepository.save(new Category("Okoliš"));
+            categoryRepository.save(new Category("Ostalo"));
+        }
 
-        Status prijavljeno = new Status();
-        prijavljeno.setName("Prijavljeno");
-        statusRepository.save(prijavljeno);
+        if (statusRepository.count() == 0) {
+            statusRepository.save(new Status("Prijavljeno"));
+            statusRepository.save(new Status("U toku"));
+            statusRepository.save(new Status("Riješeno"));
+            statusRepository.save(new Status("Odbijeno"));
+        }
 
-        Report testReport = new Report();
-        testReport.setTitle("Velika rupa - Otoka");
-        testReport.setDescription("Rupa duboka 20cm na glavnoj raskrsnici.");
-        testReport.setAddress("Bulevar Meše Selimovića");
-        
-        testReport.setUserId(1L); 
-        
-        testReport.setCategory(rupa);
-        testReport.setStatus(prijavljeno);
-        
-        reportRepository.save(testReport);
+        if (reportRepository.count() == 0) {
+            Category rupa = categoryRepository.findAll().get(0);
+            Status prijavljeno = statusRepository.findAll().get(0);
+
+            Report testReport = new Report();
+            testReport.setTitle("Velika rupa - Otoka");
+            testReport.setDescription("Rupa duboka 20cm na glavnoj raskrsnici.");
+            testReport.setAddress("Bulevar Meše Selimovića");
+            testReport.setUserId(1L);
+            testReport.setCategory(rupa);
+            testReport.setStatus(prijavljeno);
+            reportRepository.save(testReport);
+        }
     }
 }

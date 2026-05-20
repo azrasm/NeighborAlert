@@ -2,7 +2,12 @@ package com.projekat.report_service.service;
 
 import com.projekat.report_service.dto.ReportDTO;
 import com.projekat.report_service.model.Report;
+import com.projekat.report_service.model.Category;
+import com.projekat.report_service.model.Status;
+import com.projekat.report_service.repository.CategoryRepository;
 import com.projekat.report_service.repository.ReportRepository;
+import com.projekat.report_service.repository.StatusRepository;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +22,12 @@ import java.util.stream.Collectors;
 @Service
 public class ReportService {
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private StatusRepository statusRepository;
+    
     @Autowired
     private ReportRepository reportRepository;
 
@@ -42,7 +53,18 @@ public class ReportService {
 
     @Transactional 
     public ReportDTO saveReport(ReportDTO reportDTO) {
-        Report report = modelMapper.map(reportDTO, Report.class);
+        Report report = new Report();
+        report.setTitle(reportDTO.getTitle());
+        report.setDescription(reportDTO.getDescription());
+        report.setAddress(reportDTO.getAddress());
+        report.setUserId(reportDTO.getUserId());
+    
+        Category category = categoryRepository.findById(reportDTO.getCategoryId()).orElseThrow(() -> new RuntimeException("Kategorija nije pronađena"));
+        report.setCategory(category);
+    
+        Status status = statusRepository.findById(reportDTO.getStatusId()).orElseThrow(() -> new RuntimeException("Status nije pronađen"));
+        report.setStatus(status);
+    
         Report savedReport = reportRepository.save(report);
         return modelMapper.map(savedReport, ReportDTO.class);
     }
