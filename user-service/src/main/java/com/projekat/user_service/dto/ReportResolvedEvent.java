@@ -5,6 +5,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
+/**
+ * =========================================================
+ *                    Zadatak 8. RabbitMQ
+ * =========================================================
+ * Opis:
+ * Event koji se aktivira kada se prijava uspjesno
+ * oznaci kao rijsena
+ * Sluzi za pokretanje Saga koreografije i obavjestava
+ * user-service da azurira user-service o dodjeli bodova
+ * =========================================================
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

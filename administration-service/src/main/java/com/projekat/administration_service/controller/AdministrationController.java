@@ -60,4 +60,13 @@ public ResponseEntity<Page<ReportAssignment>> getAllPaged(
         @RequestParam(defaultValue = "id") String sortBy) {
     return ResponseEntity.ok(administrationService.getAllPaged(page, size, sortBy));
 }
+    /**
+    * Zadatak 8. RabbitMQ
+    * Endpoint za promjenu statusa ili rollback
+    */
+    @PostMapping("/status/change")
+    public ResponseEntity<StatusHistory> updateStatusAndRollack(@Valid @RequestBody StatusHistoryDTO dto) {
+        StatusHistory result = administrationService.updateStatusAndTriggerSaga(dto);
+        return ResponseEntity.ok(result);
+    }
 }

@@ -11,11 +11,16 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.support.converter.MessageConverter;
-
-
 /**
- ********  Zadatak 8. RabbitMQ **********
- * 
+ * =========================================================
+ *                    Zadatak 8. RabbitMQ
+ * =========================================================
+ *
+ * Konfiguracija:
+ * Imenovanje kljuceva
+ * Definisanje exchange-a
+ * Definisanje Queue za uspjesni i neuspjesne dogadjaje 
+ * =========================================================
  */
 
 @Configuration
@@ -23,31 +28,33 @@ public class RabbitMQConfig {
 
     public static final String EXCHANGE = "neighboralert.exchange";
     
-    // Sluša poruke iz administracije da je tiket završen
-    public static final String TICKET_COMPLETED_QUEUE = "report.ticket.completed.queue";
-    public static final String TICKET_COMPLETED_ROUTING_KEY = "ticket.completed";
+    // Slusa poruke iz administracije kada je report rijesen
+    public static final String ASSIGNMENT_COMPLETED_QUEUE = "report.assignment.completed.queue";
+    public static final String ASSIGNMENT_COMPLETED_ROUTING_KEY = "assignment.completed";
 
-    // Sluša globalni rollback ako user-service baci grešku
+    // Slusa globalni rollback ako user-service baci gresku
     public static final String ROLLBACK_QUEUE = "report.rollback.queue";
     public static final String ROLLBACK_ROUTING_KEY = "saga.rollback";
+
+    public static final String SUCCESS_ROUTING_KEY = "report.resolved";
 
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(EXCHANGE);
     }
 
-    // Red za primanje obavijesti o završenim tiketima
+    // Queue za primanje obavijesti o rijesenim reportovima
     @Bean
     public Queue ticketCompletedQueue() {
-        return new Queue(TICKET_COMPLETED_QUEUE, true);
+        return new Queue(ASSIGNMENT_COMPLETED_QUEUE, true);
     }
 
     @Bean
     public Binding bindingTicketCompleted(Queue ticketCompletedQueue, TopicExchange exchange) {
-        return BindingBuilder.bind(ticketCompletedQueue).to(exchange).with(TICKET_COMPLETED_ROUTING_KEY);
+        return BindingBuilder.bind(ticketCompletedQueue).to(exchange).with(ASSIGNMENT_COMPLETED_ROUTING_KEY);
     }
 
-    // Red za kompenzacijsku (inverznu) akciju u Report servisu
+    // Queue za roolback akcije u slucaju greske
     @Bean
     public Queue rollbackQueue() {
         return new Queue(ROLLBACK_QUEUE, true);

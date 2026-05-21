@@ -11,21 +11,33 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.support.converter.MessageConverter;
 
+/**
+ * =========================================================
+ *                    Zadatak 8. RabbitMQ
+ * =========================================================
+ * Konfiguracija:
+ * Imenovanje kljuceva
+ * Definisanje exchange-a
+ * Definisanje Queue za uspjesni i neuspjesne dogadjaje 
+ * =========================================================
+ */
+
 @Configuration
 public class RabbitMQConfig {
 
     public static final String EXCHANGE = "neighboralert.exchange";
     
-    // Sluša poruke iz report-service da je prijava uspješno riješena kako bi dodijelio bodove
+    // Slusa poruke iz report-service da je prijava uspjesno rijesena kako bi dodijelio bodove
     public static final String REPORT_RESOLVED_QUEUE = "user.report.resolved.queue";
     public static final String REPORT_RESOLVED_ROUTING_KEY = "report.resolved";
+    public static final String ROLLBACK_ROUTING_KEY = "saga.rollback";
 
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(EXCHANGE);
     }
 
-    // Red za primanje poruka o dodjeli bodova
+    // Queue za primanje poruka o dodjeli bodova
     @Bean
     public Queue reportResolvedQueue() {
         return new Queue(REPORT_RESOLVED_QUEUE, true);

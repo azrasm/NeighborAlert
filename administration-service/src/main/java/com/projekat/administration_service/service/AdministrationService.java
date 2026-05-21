@@ -102,31 +102,33 @@ public class AdministrationService {
         return saved;
     }
 
-    // Zadatak 8.
+     /**
+     * Zadatak 8. RabbitMQ
+     * Vrsi poziv lanca kada administrator oznaci 
+     * prijavu kao rijesenu
+     */
     @Transactional
     public StatusHistory updateStatusAndTriggerSaga(StatusHistoryDTO dto) {
-        // 1. LOKALNA TRANSAKCIJA 1: Standardni upis statusa u bazu (tvoj postojeći kod)
+        // Lokalna transakcija
         StatusHistory history = new StatusHistory();
         history.setReportId(dto.getReportId());
         history.setAdminId(dto.getAdminId());
-        history.setNewStatus(dto.getNewStatus()); // Ovdje admin šalje npr. "ZAVRŠENO"
+        history.setNewStatus(dto.getNewStatus());
         history.setComment(dto.getComment());
         history.setChangeDate(LocalDateTime.now());
-        history.setOldStatus("PENDING"); 
+        history.setOldStatus("U toku"); 
 
         StatusHistory savedHistory = statusHistoryRepository.save(history);
 
-        // 2. TRIGGER ZA RABBITMQ SAGA: Pokreće se samo ako administrator postavlja status na "ZAVRŠENO"
-        if ("ZAVRŠENO".equalsIgnoreCase(dto.getNewStatus()) || "RESOLVED".equalsIgnoreCase(dto.getNewStatus())) {
+        // Pokrece se RabbitMQ Saga samo ako administrator postavlja status na "Riješeno"
+        if ("Riješeno".equalsIgnoreCase(dto.getNewStatus())) {
             
-            // Izvlačimo assignmentId preko reportId-a (ili ako ga nemaš, proslijedi null/0, ali bitno nam je poslati reportId i adminId)
-            Long dummyAssignmentId = dto.getReportId(); // Možeš iskoristiti reportId kao identifikator toka
+            Long dummyAssignmentId = dto.getReportId();
             
-            // Šaljemo poruku na RabbitMQ preko našeg publishera
+            // Slanje poruke
             administrationEventProducer.produceAssignmentCompleted(
                 dummyAssignmentId, 
-                dto.getReportId(), 
-                dto.getAdminId() // Pretpostavljamo da je adminId povezan sa ovim ili izvuci userId ako ga imaš
+                dto.getReportId()
             );
         }
 
@@ -134,16 +136,17 @@ public class AdministrationService {
     }
 
     /**
-     * INVERZNA (KOMPENZACIJSKA) AKCIJA - Poziva je AdministrationRollbackListener
-     * Ako ostatak sistema padne, moramo poništiti činjenicu da je status "ZAVRŠENO".
+     * Zadatak 8. RabbitMQ
+     * Inverzna akcija
+     * Ako ostatak sistema padne ponistava se status "Riješeno".
      */
     @Transactional
     public void rollbackStatusChange(Long reportId) {
-        // Opcija A: Upisujemo novi red u istoriju koji kaže da je vraćeno na "U_TOKU" zbog greške
+        // Upisuje se novi history sa opisom greske rollback-a
         StatusHistory rollbackHistory = new StatusHistory();
         rollbackHistory.setReportId(reportId);
-        rollbackHistory.setNewStatus("U_TOKU");
-        rollbackHistory.setOldStatus("ZAVRŠENO");
+        rollbackHistory.setNewStatus("U toku");
+        rollbackHistory.setOldStatus("Riješeno");
         rollbackHistory.setChangeDate(LocalDateTime.now());
         rollbackHistory.setComment("SAGA ROLLBACK: Automatsko vraćanje statusa zbog greške u sistemu bodovanja.");
         

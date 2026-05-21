@@ -1,4 +1,4 @@
-package com.projekat.report_service.dto;
+package com.projekat.administration_service.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +16,7 @@ import java.io.Serializable;
  * user-service da azurira user-service o dodjeli bodova
  * =========================================================
  */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

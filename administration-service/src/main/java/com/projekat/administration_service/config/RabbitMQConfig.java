@@ -11,38 +11,55 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.support.converter.MessageConverter;
 
+/**
+ * =========================================================
+ *                    Zadatak 8. RabbitMQ
+ * =========================================================
+ *
+ * Konfiguracija:
+ * Imenovanje kljuceva
+ * Definisanje exchange-a
+ * Definisanje Queue za uspjesni i neuspjesne dogadjaje 
+ * =========================================================
+ */
+
 @Configuration
 public class RabbitMQConfig {
 
+    // Exchange
     public static final String EXCHANGE = "neighboralert.exchange";
+
+    // Rollback queue u slucaju greske 
     public static final String ROLLBACK_QUEUE = "administration.rollback.queue";
     public static final String ROLLBACK_ROUTING_KEY = "saga.rollback";
 
-    // 1. Definisanje Topic Exchange-a
+    public static final String ROUTING_KEY = "assignment.completed";
+
+    // Definisanje Topic Exchange-a
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(EXCHANGE);
     }
 
-    // 2. Definisanje Queue-a za inverznu akciju (Rollback) u administraciji
+    //Definisanje Queue rollback u administraciji
     @Bean
     public Queue rollbackQueue() {
-        return new Queue(ROLLBACK_QUEUE, true); // durable = true (čuva poruke i ako se Rabbit restartuje)
+        return new Queue(ROLLBACK_QUEUE, true); // durable = true (znaci da cuva poruke i ako se Rabbit restartuje)
     }
 
-    // 3. Vezivanje (Binding) rollback queue-a na exchange sa routing ključem
+    // Binding rollback queue na exchange sa routing kljucem
     @Bean
     public Binding bindingRollback(Queue rollbackQueue, TopicExchange exchange) {
         return BindingBuilder.bind(rollbackQueue).to(exchange).with(ROLLBACK_ROUTING_KEY);
     }
 
-    // 4. Konfiguracija Jackson konvertera za automatsku serijalizaciju Java objekata u JSON
+    // Konfiguracija Jackson konvertera za automatsku serijalizaciju Java objekata u json
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // 5. Konfiguracija RabbitTemplate-a da koristi JSON umjesto podrazumijevane Java serijalizacije
+    // Konfiguracija RabbitTemplate da koristi json umjesto podrazumijevane Java serijalizacije
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         final RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
