@@ -28,6 +28,10 @@ import com.projekat.report_service.dto.ReportDTO;
 @Component
 @RequiredArgsConstructor
 public class ReportEventConsumer {
+    // ANSI Kodovi za boje u terminalu
+    private static final String ANSI_YELLOW = "\u001B[33m";
+    private static final String ANSI_GREEN = "\u001B[32m";
+    private static final String ANSI_RED = "\u001B[31m";
 
     private final RabbitTemplate rabbitTemplate;
     private final ReportService reportService;
@@ -35,7 +39,7 @@ public class ReportEventConsumer {
     // Slusa uspjesan zavrsetak iz administracije
     @RabbitListener(queues = RabbitMQConfig.ASSIGNMENT_COMPLETED_QUEUE)
     public void handleAssignmentCompleted(AssignmentCompletedEvent event) {
-        log.info("Primljen event iz administracije za Report ID: {}", event.getReportId());
+        log.info(ANSI_YELLOW + "Primljen event iz administracije za Report ID: {}", event.getReportId());
         
         try {
             // Lokalna transakcija: 
@@ -46,12 +50,12 @@ public class ReportEventConsumer {
             // saljemo poruku za bodove
             ReportDTO targetReport = reportService.getReportById(event.getReportId());
             ReportResolvedEvent nextEvent = new ReportResolvedEvent(event.getReportId(), targetReport.getUserId(), 50);
-            log.info("Report ažuriran. Šaljem zahtjev za dodjelu bodova korisniku: {}", targetReport.getUserId());
+            log.info(ANSI_GREEN + "Report azuriran. Salje se zahtjev za dodjelu bodova korisniku: {}", targetReport.getUserId());
             
             rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SUCCESS_ROUTING_KEY, nextEvent);
             
         } catch (Exception e) {
-            log.error("Greška pri upisu u Report bazu. Pokrećem rollback za administraciju. Greška: {}", e.getMessage());
+            log.error(ANSI_RED + "Greska pri upisu u Report bazu. Pokrece se rollback za administraciju. Greska: {}", e.getMessage());
             
             // Inverzna akcija: 
             // Saljemo originalni event nazad
@@ -62,20 +66,20 @@ public class ReportEventConsumer {
     // Slusa kaskadni rollback ako user-service baci gresku
     @RabbitListener(queues = RabbitMQConfig.ROLLBACK_QUEUE)
     public void handleReportRollback(ReportResolvedEvent failedEvent) {
-        log.warn("PRIMLJEN KASKADNI ROLLBACK! Vraćanje statusa prijave ID: {}", failedEvent.getReportId());
+        log.warn(ANSI_RED + "ROLLBACK! Vracanje statusa prijave ID: {}", failedEvent.getReportId());
         
         try {
             // Inverzna akcija: Vratite status prijave sa "Riješeno" nazad
             reportService.rollbackReportStatus(failedEvent.getReportId());
             
-            log.info("Uspješno poništen status prijave u report-service bazi.");
+            log.info(ANSI_GREEN + "Uspjesno ponisten status prijave u report-service bazi.");
 
             // Slanje istog event na exchange kako bi i administracija radila rollback
-            log.info("Prosljeđujem rollback signal prema administraciji za Report ID: {}", failedEvent.getReportId());
+            log.info(ANSI_YELLOW + "Prosljeduje se rollback prema administraciji za Report ID: {}", failedEvent.getReportId());
             rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ADMIN_ROLLBACK_KEY, failedEvent);
             
         } catch (Exception e) {
-            log.error("Greška prilikom izvršavanja inverzne akcije u report-service: {}", e.getMessage());
+            log.error(ANSI_RED + "Greska prilikom izvrsavanja inverzne akcije u report-service: {}", e.getMessage());
         }
     }
 }

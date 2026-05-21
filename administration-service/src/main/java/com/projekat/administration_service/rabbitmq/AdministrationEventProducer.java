@@ -25,13 +25,16 @@ import com.projekat.administration_service.dto.AssignmentCompletedEvent;
 @RequiredArgsConstructor
 public class AdministrationEventProducer {
 
+    // ANSI Kodovi za boje u terminalu
+    private static final String ANSI_YELLOW = "\u001B[33m";
+
     private final RabbitTemplate rabbitTemplate;
 
     public void produceAssignmentCompleted(Long assignmentId, Long reportId) {
         // Kreiranje event-a
         AssignmentCompletedEvent event = new AssignmentCompletedEvent(assignmentId, reportId);
         
-        log.info("Slanje poruke na RabbitMQ: Assignment {} je završen.", assignmentId);
+        log.info(ANSI_YELLOW + "Slanje poruke na RabbitMQ: Assignment {} je zavrsen.", assignmentId);
         
         // Slanje objekta u odgovarajuci queue unutar report-service
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);

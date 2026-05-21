@@ -26,20 +26,23 @@ import com.projekat.administration_service.service.AdministrationService;
 @Component
 @RequiredArgsConstructor
 public class AdministrationRollbackConsumer  {
+    // ANSI Kodovi za boje u terminalu
+    private static final String ANSI_GREEN = "\u001B[32m";
+    private static final String ANSI_RED = "\u001B[31m";
 
     private final AdministrationService administrationService;
 
     @RabbitListener(queues = RabbitMQConfig.ROLLBACK_QUEUE)
     public void handleAdministrationRollback(ReportResolvedEvent failedEvent) {
-        log.warn("PRIMLJEN ROLLBACK SIGNAL! Pokrece se inverzna akciju za Report ID: {}", failedEvent.getReportId());
+        log.warn(ANSI_RED + "ROLLBACK! Pokrece se inverzna akciju za Report ID: {}", failedEvent.getReportId());
         
         try {
             // metoda iz servis klase za vracanje u prvobitno stanje
             administrationService.rollbackStatusChange(failedEvent.getReportId());
             
-            log.info("Uspješno izvršena inverzna akcija u bazi administracije.");
+            log.info(ANSI_GREEN + "Uspjesno izvrsena inverzna akcija u bazi administracije.");
         } catch (Exception e) {
-            log.error("Greška prilikom izvršavanja inverzne akcije: {}", e.getMessage());
+            log.error(ANSI_RED + "Greska prilikom izvrsavanja inverzne akcije: {}", e.getMessage());
         }
     }
 }
