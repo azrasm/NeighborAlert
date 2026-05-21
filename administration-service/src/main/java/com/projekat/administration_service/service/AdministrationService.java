@@ -4,6 +4,7 @@ import com.projekat.administration_service.dto.ReportAssignmentDTO;
 import com.projekat.administration_service.dto.StatusHistoryDTO;
 import com.projekat.administration_service.model.ReportAssignment;
 import com.projekat.administration_service.model.StatusHistory;
+import com.projekat.administration_service.rabbitmq.AdministrationEventProducer;
 import com.projekat.administration_service.repository.ReportAssignmentRepository;
 import com.projekat.administration_service.repository.StatusHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class AdministrationService {
     @Autowired
     private StatusHistoryRepository statusHistoryRepository;
 
+    @Autowired
+    private AdministrationEventProducer administrationEventProducer;
+
     public ReportAssignment assignReport(ReportAssignmentDTO dto) {
         // Kreiramo novi objekat modela (Entity)
         ReportAssignment assignment = new ReportAssignment();
@@ -39,7 +43,9 @@ public class AdministrationService {
         // Čuvamo u bazu i vraćamo spašeni objekat
         return reportAssignmentRepository.save(assignment);
     }
-public StatusHistory updateStatus(StatusHistoryDTO dto) {
+
+    public StatusHistory updateStatus(StatusHistoryDTO dto) {
+        
         StatusHistory history = new StatusHistory();
         
         history.setReportId(dto.getReportId());
@@ -65,30 +71,84 @@ public StatusHistory updateStatus(StatusHistoryDTO dto) {
     public List<ReportAssignment> getAssignmentsByAdmin(Long adminId) {
         return reportAssignmentRepository.findByAdminId(adminId);
     }
+
     public void deleteAssignment(Long id) {
     if (!reportAssignmentRepository.existsById(id)) {
         throw new RuntimeException("Assignment with ID " + id + " not found.");
     }
     reportAssignmentRepository.deleteById(id);
-}
-public Page<ReportAssignment> getAllPaged(int page, int size, String sortBy) {
-    Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
-    return reportAssignmentRepository.findAll(pageable);
-}
-@Transactional 
-public ReportAssignment assignAndLogStatus(ReportAssignmentDTO dto) {
-    // 1. Kreiraj dodjelu
-    ReportAssignment ra = new ReportAssignment();
-    ra.setReportId(dto.getReportId());
-    ra.setAdminId(dto.getAdminId());
-    ReportAssignment saved = reportAssignmentRepository.save(ra);
+    }
 
-    // 2. Automatski kreiraj zapis u istoriji (drugi repozitorij)
-    StatusHistory history = new StatusHistory();
-    history.setReportId(dto.getReportId());
-    history.setNewStatus("ASSIGNED");
-    statusHistoryRepository.save(history);
+    
+    public Page<ReportAssignment> getAllPaged(int page, int size, String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
+        return reportAssignmentRepository.findAll(pageable);
+    }   
 
-    return saved;
-}
+    @Transactional 
+    public ReportAssignment assignAndLogStatus(ReportAssignmentDTO dto) {
+        // 1. Kreiraj dodjelu
+        ReportAssignment ra = new ReportAssignment();
+        ra.setReportId(dto.getReportId());
+        ra.setAdminId(dto.getAdminId());
+        ReportAssignment saved = reportAssignmentRepository.save(ra);
+
+        // 2. Automatski kreiraj zapis u istoriji (drugi repozitorij)
+        StatusHistory history = new StatusHistory();
+        history.setReportId(dto.getReportId());
+        history.setNewStatus("ASSIGNED");
+        statusHistoryRepository.save(history);
+
+        return saved;
+    }
+
+    // Zadatak 8.
+    @Transactional
+    public StatusHistory updateStatusAndTriggerSaga(StatusHistoryDTO dto) {
+        // 1. LOKALNA TRANSAKCIJA 1: Standardni upis statusa u bazu (tvoj postojeći kod)
+        StatusHistory history = new StatusHistory();
+        history.setReportId(dto.getReportId());
+        history.setAdminId(dto.getAdminId());
+        history.setNewStatus(dto.getNewStatus()); // Ovdje admin šalje npr. "ZAVRŠENO"
+        history.setComment(dto.getComment());
+        history.setChangeDate(LocalDateTime.now());
+        history.setOldStatus("PENDING"); 
+
+        StatusHistory savedHistory = statusHistoryRepository.save(history);
+
+        // 2. TRIGGER ZA RABBITMQ SAGA: Pokreće se samo ako administrator postavlja status na "ZAVRŠENO"
+        if ("ZAVRŠENO".equalsIgnoreCase(dto.getNewStatus()) || "RESOLVED".equalsIgnoreCase(dto.getNewStatus())) {
+            
+            // Izvlačimo assignmentId preko reportId-a (ili ako ga nemaš, proslijedi null/0, ali bitno nam je poslati reportId i adminId)
+            Long dummyAssignmentId = dto.getReportId(); // Možeš iskoristiti reportId kao identifikator toka
+            
+            // Šaljemo poruku na RabbitMQ preko našeg publishera
+            administrationEventProducer.produceAssignmentCompleted(
+                dummyAssignmentId, 
+                dto.getReportId(), 
+                dto.getAdminId() // Pretpostavljamo da je adminId povezan sa ovim ili izvuci userId ako ga imaš
+            );
+        }
+
+        return savedHistory;
+    }
+
+    /**
+     * INVERZNA (KOMPENZACIJSKA) AKCIJA - Poziva je AdministrationRollbackListener
+     * Ako ostatak sistema padne, moramo poništiti činjenicu da je status "ZAVRŠENO".
+     */
+    @Transactional
+    public void rollbackStatusChange(Long reportId) {
+        // Opcija A: Upisujemo novi red u istoriju koji kaže da je vraćeno na "U_TOKU" zbog greške
+        StatusHistory rollbackHistory = new StatusHistory();
+        rollbackHistory.setReportId(reportId);
+        rollbackHistory.setNewStatus("U_TOKU");
+        rollbackHistory.setOldStatus("ZAVRŠENO");
+        rollbackHistory.setChangeDate(LocalDateTime.now());
+        rollbackHistory.setComment("SAGA ROLLBACK: Automatsko vraćanje statusa zbog greške u sistemu bodovanja.");
+        
+        statusHistoryRepository.save(rollbackHistory);
+        
+        System.out.println("Baza uspješno vraćena u početno stanje (Inverzna akcija izvršena za report: " + reportId + ")");
+    }
 }
