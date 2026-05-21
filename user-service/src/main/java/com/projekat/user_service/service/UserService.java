@@ -265,4 +265,24 @@ public class UserService {
             throw new IllegalArgumentException("Email '" + email + "' je već zauzet.");
         }
     }
+
+    /**
+     * Zadatak 8. RabbitMQ
+     * Saga transakcija: Dodavanje bodova korisniku za uspjesno rijesenu prijavu
+     */
+    @Transactional
+    public void addPointsToUserScore(Long userId, int points) {
+        log.info("Saga obrada: Pokušaj dodavanja {} bodova korisniku sa ID-jem: {}", points, userId);
+        
+        User user = getUserById(userId);
+        
+        // Povecavanje score-a
+        int newScore = user.getUserScore() + points;
+        user.setUserScore(newScore);
+        
+        userRepository.save(user);
+        
+        log.info("Uspješno ažuriran score za korisnika {}. Stari score -> Novi score: {} -> {}", 
+                user.getUsername(), (newScore - points), newScore);
+    }
 }

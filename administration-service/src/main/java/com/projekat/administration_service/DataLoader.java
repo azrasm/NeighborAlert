@@ -54,6 +54,15 @@ public class DataLoader implements CommandLineRunner {
                 .changeDate(LocalDateTime.now())
                 .comment("Problem uspješno riješen.")
                 .build());
+        
+        historyRepository.save(StatusHistory.builder()
+                .reportId(1L)
+                .adminId(2L)
+                .oldStatus("Prijavljeno")
+                .newStatus("U toku")
+                .changeDate(LocalDateTime.now())
+                .comment("")
+                .build());
 
         System.out.println(">>> Administration Service: Podaci za zaduženja i historiju su učitani!");
     }
