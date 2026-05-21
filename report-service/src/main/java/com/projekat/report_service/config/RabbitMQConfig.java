@@ -36,6 +36,9 @@ public class RabbitMQConfig {
     public static final String ROLLBACK_QUEUE = "report.rollback.queue";
     public static final String ROLLBACK_ROUTING_KEY = "saga.rollback";
 
+    // Poseban kljuc za rollback ka administraciji
+    public static final String ADMIN_ROLLBACK_KEY = "administration.rollback";
+
     public static final String SUCCESS_ROUTING_KEY = "report.resolved";
 
     @Bean

@@ -72,7 +72,7 @@ public class ReportEventConsumer {
 
             // Slanje istog event na exchange kako bi i administracija radila rollback
             log.info("Prosljeđujem rollback signal prema administraciji za Report ID: {}", failedEvent.getReportId());
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROLLBACK_ROUTING_KEY, failedEvent);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ADMIN_ROLLBACK_KEY, failedEvent);
             
         } catch (Exception e) {
             log.error("Greška prilikom izvršavanja inverzne akcije u report-service: {}", e.getMessage());
