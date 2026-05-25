@@ -51,7 +51,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Provjera postoji li email
     boolean existsByEmail(String email);
 
-    // Pronalazi korisnika po usernameu — koristi se pri login-u
+    // Pronalazi korisnika po usernameu — koristi se pri loginu
     @EntityGraph(value = "User.withRole")
     Optional<User> findByUsername(String username);
 
@@ -64,4 +64,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(value = "User.withRole")
     @Query("SELECT u FROM User u JOIN u.role r WHERE r.name = :roleName")
     Page<User> findByRoleNamePaged(@Param("roleName") String roleName, Pageable pageable);
+
+    //dohvatanje role
+    @Query("SELECT r FROM UserRole r WHERE r.name = :name")
+    Optional<com.projekat.user_service.model.UserRole> findUserRoleByName(@Param("name") String name);
 }

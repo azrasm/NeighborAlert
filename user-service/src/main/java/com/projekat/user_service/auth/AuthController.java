@@ -51,4 +51,11 @@ public class AuthController {
         LoginResponseDTO response = authService.login(request);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/register")
+    @Operation(summary = "Registracija korisnika")
+    public ResponseEntity<LoginResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
+        LoginResponseDTO response = authService.register(request);
+        return ResponseEntity.ok(response);
+    }
 }

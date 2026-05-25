@@ -75,4 +75,30 @@ public class AuthService {
                 expirationMs / 1000 // pretvaramo ms u sekunde
         );
     }
+
+    public LoginResponseDTO register(RegisterRequestDTO request) {
+    //Provjeri da li username već postoji
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+                throw new AuthException("Korisnik s tim usernameom već postoji.");
+        }
+
+        //Dohvati USER rolu
+        com.projekat.user_service.model.UserRole userRole = userRepository.findUserRoleByName("USER").orElseThrow(() -> new AuthException("Sistemska greška — rola USER ne postoji."));
+
+        //Kreiraj novog korisnika
+        User newUser = User.builder()
+        .username(request.getUsername())
+        .password(passwordEncoder.encode(request.getPassword()))
+        .email(request.getEmail())
+        .userScore(0)
+        .role(userRole)
+        .build();
+
+        userRepository.save(newUser);
+        log.info("[AUTH] Novi korisnik registrovan: '{}'", request.getUsername());
+
+        //Automatski prijavi nakon registracije
+        String token = jwtUtil.generateToken(newUser);
+        return new LoginResponseDTO(token, newUser.getUsername(), userRole.getName(), expirationMs / 1000);
+        }
 }
