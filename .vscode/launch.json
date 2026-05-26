@@ -44,6 +44,16 @@
             "projectName": "user-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-AdministrationServiceApplication<administration-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.projekat.administration_service.AdministrationServiceApplication",
+            "projectName": "administration-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

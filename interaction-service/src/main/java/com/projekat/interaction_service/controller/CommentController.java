@@ -1,5 +1,6 @@
 package com.projekat.interaction_service.controller;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.projekat.interaction_service.model.Comment;
 import com.projekat.interaction_service.service.CommentService;
 
@@ -10,14 +11,18 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -61,5 +66,28 @@ public class CommentController {
     public Comment updateComment(@PathVariable Long id, @Valid @RequestBody Comment commentDetails) {
         return commentService.updateComment(id, commentDetails);
     }
-    
+
+    @PatchMapping(path = "/{id}", consumes = "application/json-patch+json")
+    @Operation(summary = "Updates a comment")
+    public ResponseEntity<Comment> patchComment(@PathVariable Long id, @RequestBody String patchJson) {
+        return ResponseEntity.ok(commentService.patchComment(id, patchJson));
+    }
+
+    @GetMapping("/reports/{reportId}")
+    @Operation(summary = "Returns all reports of a comment, supports page, size and sort")
+    public ResponseEntity<Page<Comment>> getCommentsByReport(@PathVariable Long reportId, Pageable pageable) {
+        
+        Page<Comment> comments = commentService.getCommentsByReport(reportId, pageable);
+
+        return ResponseEntity.ok(comments);
+    }
+
+     @GetMapping("/search")
+     @Operation(summary = "Searches the comments by a keyword")
+    public ResponseEntity<List<Comment>> searchComments(@RequestParam String keyword) {
+        return ResponseEntity.ok(
+                commentService.searchComments(keyword)
+        );
+    }
+
 }

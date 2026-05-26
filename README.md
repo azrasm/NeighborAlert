@@ -43,8 +43,11 @@ cd report-service && ./mvnw spring-boot:run
 cd interaction-service && ./mvnw spring-boot:run
 cd administration-service && ./mvnw spring-boot:run
 
-# 3. Gateway (start last)
+# 3. Gateway 
 cd api-gateway && ./mvnw spring-boot:run
+
+# 4. Frontend
+cd frontend && npm run dev
 ```
 
 All external requests go through the gateway on port **8080**.
