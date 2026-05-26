@@ -7,14 +7,13 @@ import com.projekat.report_service.model.Status;
 import com.projekat.report_service.repository.CategoryRepository;
 import com.projekat.report_service.repository.ReportRepository;
 import com.projekat.report_service.repository.StatusRepository;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.lang.NonNull; 
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,59 +21,86 @@ import java.util.stream.Collectors;
 @Service
 public class ReportService {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    @Autowired private CategoryRepository categoryRepository;
+    @Autowired private StatusRepository statusRepository;
+    @Autowired private ReportRepository reportRepository;
+    @Autowired private ModelMapper modelMapper;
 
-    @Autowired
-    private StatusRepository statusRepository;
-    
-    @Autowired
-    private ReportRepository reportRepository;
-
-    @Autowired
-    private ModelMapper modelMapper;
+    private ReportDTO toDTO(Report report) {
+        ReportDTO dto = new ReportDTO();
+        dto.setId(report.getId());
+        dto.setTitle(report.getTitle());
+        dto.setDescription(report.getDescription());
+        dto.setAddress(report.getAddress());
+        dto.setUserId(report.getUserId());
+        if (report.getCategory() != null) {
+            dto.setCategoryId(report.getCategory().getId());
+        }
+        if (report.getStatus() != null) {
+            dto.setStatusId(report.getStatus().getId());
+        }
+        return dto;
+    }
 
     public List<ReportDTO> getAllReports() {
         return reportRepository.findAll().stream()
-                .map(report -> modelMapper.map(report, ReportDTO.class))
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
     public Page<ReportDTO> getAllReportsPaged(@NonNull Pageable pageable) {
-        return reportRepository.findAll(pageable)
-                .map(report -> modelMapper.map(report, ReportDTO.class));
+        return reportRepository.findAll(pageable).map(this::toDTO);
     }
 
     public ReportDTO getReportById(@NonNull Long id) {
-    return reportRepository.findById(id)
-            .map(report -> modelMapper.map(report, ReportDTO.class))
-            .orElse(null); 
+        return reportRepository.findById(id).map(this::toDTO).orElse(null);
     }
 
-    @Transactional 
+    @Transactional
     public ReportDTO saveReport(ReportDTO reportDTO) {
         Report report = new Report();
         report.setTitle(reportDTO.getTitle());
         report.setDescription(reportDTO.getDescription());
         report.setAddress(reportDTO.getAddress());
         report.setUserId(reportDTO.getUserId());
-    
-        Category category = categoryRepository.findById(reportDTO.getCategoryId()).orElseThrow(() -> new RuntimeException("Kategorija nije pronađena"));
+
+        Category category = categoryRepository.findById(reportDTO.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Kategorija nije pronađena"));
         report.setCategory(category);
-    
-        Status status = statusRepository.findById(reportDTO.getStatusId()).orElseThrow(() -> new RuntimeException("Status nije pronađen"));
+
+        Status status = statusRepository.findById(reportDTO.getStatusId())
+                .orElseThrow(() -> new RuntimeException("Status nije pronađen"));
         report.setStatus(status);
-    
-        Report savedReport = reportRepository.save(report);
-        return modelMapper.map(savedReport, ReportDTO.class);
+
+        return toDTO(reportRepository.save(report));
     }
 
-    @Transactional 
+    @Transactional
     public boolean deleteReport(@NonNull Long id) {
         if (reportRepository.existsById(id)) {
             reportRepository.deleteById(id);
             return true;
         }
         return false;
+    }
+
+    @Transactional
+    public ReportDTO updateReport(Long id, ReportDTO reportDTO) {
+        return reportRepository.findById(id).map(existing -> {
+            existing.setTitle(reportDTO.getTitle());
+            existing.setDescription(reportDTO.getDescription());
+            existing.setAddress(reportDTO.getAddress());
+
+            if (reportDTO.getCategoryId() != null) {
+                categoryRepository.findById(reportDTO.getCategoryId())
+                        .ifPresent(existing::setCategory);
+            }
+            if (reportDTO.getStatusId() != null) {
+                statusRepository.findById(reportDTO.getStatusId())
+                        .ifPresent(existing::setStatus);
+            }
+
+            return toDTO(reportRepository.save(existing));
+        }).orElse(null);
     }
 }
