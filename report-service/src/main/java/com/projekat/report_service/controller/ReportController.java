@@ -52,6 +52,15 @@ public class ReportController {
         return new ResponseEntity<>(savedReport, HttpStatus.CREATED);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<ReportDTO> updateReport(@PathVariable Long id, @Valid @RequestBody ReportDTO reportDTO) {
+        ReportDTO updated = reportService.updateReport(id, reportDTO);
+        if (updated != null) {
+            return ResponseEntity.ok(updated);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReport(@PathVariable Long id) {
         if (reportService.deleteReport(id)) {
