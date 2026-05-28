@@ -31,7 +31,7 @@ const api = {
   // Administration (ADMIN only)
   getAssignments: () => api.request("/api/administration/assignments"),
   assignReport: (body) => api.request("/api/administration/assign", { method: "POST", body: JSON.stringify(body) }),
-  updateStatus: (body) => api.request("/api/administration/status", { method: "POST", body: JSON.stringify(body) }),
+  updateStatus: (body) => api.request("/api/administration/status/change", { method: "POST", body: JSON.stringify(body) }),
 };
 
 // ─── STYLES ───────────────────────────────────────────────────────────────────
@@ -796,7 +796,7 @@ function UsersPage() {
 }
 
 // ── ADMIN PAGE ────────────────────────────────────────────────────────────────
-function AdminPage() {
+function AdminPage({currentUser}) {
   const [assignments, setAssignments] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -897,7 +897,7 @@ function AdminPage() {
           {/* Promjena statusa */}
           <div className="card" style={{ gridColumn: "1 / -1" }}>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, marginBottom: 16 }}>Promjena statusa prijave</div>
-            <ChangeStatusForm reports={reports} onSaved={load} />
+            <ChangeStatusForm reports={reports} onSaved={load} currentUser={currentUser}/>
           </div>
         </div>
       ) : (
@@ -933,7 +933,7 @@ function AdminPage() {
   );
 }
 
-function ChangeStatusForm({ reports, onSaved }) {
+function ChangeStatusForm({ reports, onSaved, currentUser}) {
   const [reportId, setReportId] = useState(reports[0]?.id || "");
   const [statusId, setStatusId] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -945,17 +945,12 @@ function ChangeStatusForm({ reports, onSaved }) {
     setLoading(true); setMsg(""); setError("");
     const r = reports.find(r => r.id === Number(reportId));
     try {
-      await api.request(`/api/reports/${reportId}`, {
-        method: "PUT",
-        body: JSON.stringify({
-          title: r.title,
-          description: r.description,
-          address: r.address,
-          userId: r.userId,
-          categoryId: r.category?.id || r.categoryId || 1,
-          statusId: Number(statusId),
-        })
-      });
+      await api.updateStatus({
+      reportId: Number(reportId),
+      adminId: currentUser?.userId,
+      newStatus: STATUS_LABELS[Number(statusId)],
+      comment: "Status promijenjen preko admin panela"
+    });
       setMsg("Status uspješno promijenjen!");
       onSaved();
     } catch (e) { setError(e.message); }
@@ -1177,7 +1172,7 @@ export default function App() {
                     } />
                     <Route path="/admin" element={
                       <ProtectedRoute requireAdmin>
-                        <AdminPage />
+                        <AdminPage currentUser={currentUser} />
                       </ProtectedRoute>
                     } />
                     <Route path="/profil" element={<ProfilePage authData={authData} onLogout={logout} />} />

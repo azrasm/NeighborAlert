@@ -101,7 +101,7 @@ public class ReportService {
             }
 
             return toDTO(reportRepository.save(existing));
-        }).orElse(null);
+        }).orElse(null);}
     /**
      * Zadatak 8. RabbitMQ
      * Saga transakcija: Postavlja status prijave na "Riješeno"
