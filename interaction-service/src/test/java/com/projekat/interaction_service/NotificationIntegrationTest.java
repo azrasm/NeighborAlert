@@ -31,7 +31,7 @@ class NotificationIntegrationTest {
     @Test
     void getNotificationsByUserIntegrationTest() {
 
-        notificationRepository.save(new Notification(4L, "Hello user 4"));
+        notificationRepository.save(new Notification(4L, "Hello message", "Hello user 4"));
 
         assertThat(
                 mockMvcTester.get().uri("/api/notifications/user/4"))
@@ -45,7 +45,7 @@ class NotificationIntegrationTest {
     void deleteNotificationIntegrationTest() {
 
         Notification saved = notificationRepository.save(
-                new Notification(1L, "To be deleted")
+                new Notification(1L, "Delete message", "To be deleted")
         );
 
         assertThat(

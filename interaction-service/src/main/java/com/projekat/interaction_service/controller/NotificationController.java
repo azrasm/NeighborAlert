@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,5 +38,12 @@ public class NotificationController {
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
         notificationService.deleteNotification(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // POST /api/notifications/{id}/read
+    @PostMapping("/{id}/read")
+    public ResponseEntity<Notification> markNotificationAsRead(@PathVariable Long id) {
+        Notification updatedNotification = notificationService.markAsRead(id);
+        return ResponseEntity.ok(updatedNotification);
     }
 }

@@ -32,6 +32,9 @@ const api = {
   getAssignments: () => api.request("/api/administration/assignments"),
   assignReport: (body) => api.request("/api/administration/assign", { method: "POST", body: JSON.stringify(body) }),
   updateStatus: (body) => api.request("/api/administration/status/change", { method: "POST", body: JSON.stringify(body) }),
+  // Notifications
+  getNotifications: (id) => api.request(`/api/notifications/user/${id}`, { method: "GET" }),
+  markAsRead: (id) => api.request(`/api/notifications/${id}/read`, { method: "POST" }),
 };
 
 // ─── STYLES ───────────────────────────────────────────────────────────────────
@@ -1087,10 +1090,100 @@ function ProtectedRoute({ children, requireAdmin = false }) {
 
   return children;
 }
+ 
+// ──────────────NOTIFICATION BELL ─────────────────────────────────────
+function NotificationBell({ currentUser }) {
+  const [notifications, setNotifications] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Povuci notifikacije sa backenda
+  useEffect(() => {
+    if (!currentUser?.userId) {
+      console.log("FUUUUUUUUCK");
+      return;}
+    
+    const fetchNotifications = async () => {
+      try {
+        console.log("Šaljem API poziv za notifikacije za korisnika:", currentUser.userId);
+        const data = await api.getNotifications(currentUser.userId);
+        console.log("Notifikacije uspješno učitane:", data);
+        setNotifications(data);
+      } catch (e) {
+        console.error("Greška pri učitavanju obavijesti:", e);
+      }
+    };
+
+    fetchNotifications();
+    // Opcionalno: Možete staviti setInterval da provjerava svake 2 minute
+    const interval = setInterval(fetchNotifications, 120000);
+    return () => clearInterval(interval);
+  }, [currentUser?.userId]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await api.markAsRead(id);
+      // Ažuriraj lokalno stanje da se skloni "crvena tačka"
+      setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  return (
+    <div style={{ position: "relative", display: "inline-block" }}>
+      {/* Dugme Zvono */}
+      <button onClick={() => setIsOpen(!isOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", position: "relative" }}>
+        🔔
+        {unreadCount > 0 && (
+          <span style={{
+            position: "absolute", top: -2, right: -2, background: "var(--red, #ff4d4d)", 
+            color: "white", borderRadius: "50%", padding: "2px 6px", fontSize: "10px", fontWeight: "bold"
+          }}>
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Padajući meni sa obavijestima */}
+      {isOpen && (
+        <div style={{
+          position: "absolute", right: 0, top: "30px", background: "var(--surface2, #fff)", 
+          boxShadow: "0px 4px 12px rgba(0,0,0,0.15)", borderRadius: "8px", width: "300px", 
+          zIndex: 100, maxHeight: "400px", overflowY: "auto", border: "1px solid var(--border)"
+        }}>
+          <div style={{ padding: "12px", fontWeight: "bold", borderBottom: "1px solid var(--border)" }}>
+            Obavještenja
+          </div>
+          {notifications.length === 0 ? (
+            <div style={{ padding: "16px", textAlign: "center", color: "var(--muted)" }}>Nema novih obavještenja</div>
+          ) : (
+            notifications.map(n => (
+              <div 
+                key={n.id} 
+                onClick={() => handleMarkAsRead(n.id)}
+                style={{
+                  padding: "12px", borderBottom: "1px solid var(--border)", cursor: "pointer",
+                  background: n.read ? "transparent" : "var(--accent-dim, rgba(0,123,255,0.05))",
+                  fontSize: "13px"
+                }}
+              >
+                <div style={{ fontWeight: n.read ? "normal" : "bold", marginBottom: "4px" }}>{n.title}</div>
+                <div style={{ color: "var(--text-secondary)" }}>{n.message}</div>
+                <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>{new Date(n.createdAt).toLocaleDateString()}</div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── NAVBAR ───────────────────────────────────────────────────────────────────
 function Navbar() {
-  const { authData, logout } = useAuth();
+  const { authData, logout, currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = authData?.role === "ADMIN";
@@ -1118,6 +1211,7 @@ function Navbar() {
       ))}
       <div className="nav-spacer" />
       <div className="nav-user">
+        <NotificationBell currentUser={currentUser} />
         <span className={`badge ${isAdmin ? "badge-admin" : "badge-user"}`}>{authData?.role || "USER"}</span>
         <span style={{ fontSize: 13, color: "var(--muted)" }}>{authData?.username}</span>
         <button className="btn btn-ghost btn-sm" onClick={logout}>Odjava</button>
@@ -1147,7 +1241,7 @@ export default function App() {
   const currentUser = authData ? { ...authData, userId: jwtPayload?.userId ? Number(jwtPayload.userId) : null } : null;
 
   return (
-    <AuthContext.Provider value={{ authData, login, logout }}>
+    <AuthContext.Provider value={{ authData, login, logout, currentUser }}>
       <style>{css}</style>
       <BrowserRouter>
         <Routes>
