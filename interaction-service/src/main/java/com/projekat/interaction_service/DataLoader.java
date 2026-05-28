@@ -30,9 +30,20 @@ public class DataLoader implements CommandLineRunner {
         commentRepository.save(new Comment(2L, 1L, "Komentar 3"));
 
         // Dodavanje notifikacije
-        notificationRepository.save(new Notification(1L, "Notifikacija 1"));
-        notificationRepository.save(new Notification(2L, "Notifikacija 2"));
-        notificationRepository.save(new Notification(3L, "Notifikacija 3"));
+        notificationRepository.save(new Notification(
+        1L, 
+        "Promjena statusa", 
+        "Vaša prijava (Oštećena klupa) je prebačena u status: U toku."));
+
+        notificationRepository.save(new Notification(
+            1L, 
+            "Novi komentar", 
+            "Administrator je dodao komentar na vašu prijavu: 'Ekipa izlazi na teren u petak.'"));
+            
+        notificationRepository.save(new Notification(
+        1L, 
+        "Prijava uspješno riješena!", 
+        "Služba za komunalne poslove je označila vašu prijavu #88 kao 'Riješeno'. Hvala na prijavi!"));
 
         // Dodavanje repot flag
         reportFlagRepository.save(new ReportFlag("Reason 1", 1L, 1L, true));

@@ -54,6 +54,9 @@ public class CommentService {
     @Autowired
     private UserServiceClient userServiceClient;
 
+    @Autowired
+    private NotificationService notificationService;
+
     public List<Comment> getCommentsByReport(Long reportId) {
         return commentRepository.findByReportId(reportId);
     }
@@ -67,11 +70,13 @@ public class CommentService {
      *   - sve ok → komentar snimljen → 200 OK
      */
     public Comment saveComment(Comment comment) {
+        ReportDTO report = null;
+        UserDTO user = null;
 
         // --- Korak 1: Provjeri da report postoji u report-service ---
         log.info("Provjera postojanja prijave reportId={} u report-service...", comment.getReportId());
         try {
-            ReportDTO report = reportServiceClient.getReportById(comment.getReportId());
+            report = reportServiceClient.getReportById(comment.getReportId());
             if (report == null) {
                 // null dolazi od fallbacka — servis nije dostupan
                 throw new ServiceUnavailableException(
@@ -93,7 +98,7 @@ public class CommentService {
         // --- Korak 2: Provjeri da korisnik postoji u user-service ---
         log.info("Provjera postojanja korisnika userId={} u user-service...", comment.getUserId());
         try {
-            UserDTO user = userServiceClient.getUserById(comment.getUserId());
+            user = userServiceClient.getUserById(comment.getUserId());
             if (user == null) {
                 throw new ServiceUnavailableException(
                     "user-service trenutno nije dostupan. Pokušajte ponovo kasnije.");
@@ -113,6 +118,21 @@ public class CommentService {
         Comment saved = commentRepository.save(comment);
         log.info("Komentar id={} uspješno kreiran za reportId={}, userId={}",
                 saved.getId(), saved.getReportId(), saved.getUserId());
+
+        //LOGIKA ZA NOTIFIKACIJU
+        try {
+            // OSIGURANJE: Nemoj slati notifikaciju korisniku ako je on sam komentarisao svoju prijavu
+            if (!report.getUserId().equals(user.getId())) {
+                
+                notificationService.createNotification(
+                    report.getUserId(),
+                    "Novi komentar na vašoj prijavi",
+                    "Korisnik @" + user.getUsername() + " je ostavio komentar na vašoj prijavi: " + report.getTitle());
+            }
+        } catch (Exception e) {
+            // Loguj grešku, ali nemoj srušiti spašavanje komentara ako notifikacija zakže!
+            log.error("Neuspješno slanje notifikacije za komentar", e);
+        }
         return saved;
     }
 
