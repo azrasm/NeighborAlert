@@ -2,6 +2,7 @@ package com.projekat.report_service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 public class ReportDTO {
     private Long id;
@@ -14,6 +15,10 @@ public class ReportDTO {
 
     @NotBlank(message = "Adress cannot be empty")
     private String address;
+
+    private Double latitude;
+
+    private Double longitude;
     
     @NotNull(message = "Category ID is required")
     private Long categoryId;
@@ -23,6 +28,8 @@ public class ReportDTO {
 
     @NotNull(message = "User ID is required")
     private Long userId;
+
+    private List<String> mediaUrls;
 
     public ReportDTO() {}
 
@@ -38,6 +45,12 @@ public class ReportDTO {
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
 
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 
@@ -46,4 +59,7 @@ public class ReportDTO {
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
+
+    public List<String> getMediaUrls() { return mediaUrls; }
+    public void setMediaUrls(List<String> mediaUrls) { this.mediaUrls = mediaUrls; }
 }

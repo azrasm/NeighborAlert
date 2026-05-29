@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.util.List;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
-//import com.projekat.report_service.model.Media;
 
 @Entity
 @Table(name = "prijave")
@@ -22,11 +21,15 @@ public class Report {
     private String description;
 
     @NotBlank(message = "Address is mandatory")
-    private String address; 
+    private String address;
+
+    private Double latitude;
+
+    private Double longitude;
 
     @NotNull(message = "User ID mandatory")
     @Column(name = "user_id")
-    private Long userId; 
+    private Long userId;
 
     @NotNull(message = "Category is mandatory")
     @ManyToOne
@@ -71,6 +74,12 @@ public class Report {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
