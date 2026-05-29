@@ -32,6 +32,8 @@ const api = {
   getAssignments: () => api.request("/api/administration/assignments"),
   assignReport: (body) => api.request("/api/administration/assign", { method: "POST", body: JSON.stringify(body) }),
   updateStatus: (body) => api.request("/api/administration/status/change", { method: "POST", body: JSON.stringify(body) }),
+  updateStatusNormal: (body) => api.request("/api/administration/status", { method: "POST", body: JSON.stringify(body) }),
+
   // Notifications
   getNotifications: (id) => api.request(`/api/notifications/user/${id}`, { method: "GET" }),
   markAsRead: (id) => api.request(`/api/notifications/${id}/read`, { method: "POST" }),
@@ -937,7 +939,7 @@ function AdminPage({currentUser}) {
 }
 
 function ChangeStatusForm({ reports, onSaved, currentUser}) {
-  const [reportId, setReportId] = useState(reports[0]?.id || "");
+    const [reportId, setReportId] = useState(reports[0]?.id || "");
   const [statusId, setStatusId] = useState(1);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -945,19 +947,47 @@ function ChangeStatusForm({ reports, onSaved, currentUser}) {
 
   const submit = async () => {
     if (!reportId) return;
-    setLoading(true); setMsg(""); setError("");
+
+    setLoading(true);
+    setMsg("");
+    setError("");
+
     const r = reports.find(r => r.id === Number(reportId));
+
     try {
-      await api.updateStatus({
-      reportId: Number(reportId),
-      adminId: currentUser?.userId,
-      newStatus: STATUS_LABELS[Number(statusId)],
-      comment: "Status promijenjen preko admin panela"
-    });
+      // ako je status "Riješeno"
+      if (Number(statusId) === 3) {
+        await api.updateStatus({
+          reportId: Number(reportId),
+          adminId: currentUser?.userId,
+          newStatus: STATUS_LABELS[Number(statusId)],
+          comment: "Status promijenjen preko admin panela"
+        });
+      }
+
+      // ostali statusi
+      else {
+        await api.request(`/api/reports/${reportId}`, {
+          method: "PUT",
+          body: JSON.stringify({
+            title: r.title,
+            description: r.description,
+            address: r.address,
+            userId: r.userId,
+            categoryId: r.category?.id || r.categoryId || 1,
+            statusId: Number(statusId),
+          })
+        });
+      }
+
       setMsg("Status uspješno promijenjen!");
       onSaved();
-    } catch (e) { setError(e.message); }
-    finally { setLoading(false); }
+
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
