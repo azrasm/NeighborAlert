@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, createContext, useContext, useRef } f
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 
 // ─── API CONFIG ────────────────────────────────────────────────────────────────
-const API_BASE = "http://localhost:8080";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const api = {
   async request(path, options = {}) {
