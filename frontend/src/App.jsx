@@ -1,43 +1,9 @@
 import { useState, useEffect, useCallback, createContext, useContext, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import api from './api/apiClient';
 
 // ─── API CONFIG ────────────────────────────────────────────────────────────────
 const API_BASE = import.meta.env.VITE_API_BASE;
-
-const api = {
-  async request(path, options = {}) {
-    const token = localStorage.getItem("na_token");
-    const headers = { "Content-Type": "application/json", ...options.headers };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-    if (res.status === 401) { localStorage.removeItem("na_token"); window.location.reload(); }
-    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `HTTP ${res.status}`); }
-    if (res.status === 204) return null;
-    return res.json();
-  },
-  login: (body) => api.request("/api/auth/login", { method: "POST", body: JSON.stringify(body) }),
-  getUsers: () => api.request("/api/users"),
-  getUser: (id) => api.request(`/api/users/${id}`),
-  getReports: () => api.request("/api/reports"),
-  getReport: (id) => api.request(`/api/reports/${id}`),
-  createReport: (body) => api.request("/api/reports", { method: "POST", body: JSON.stringify(body) }),
-  deleteReport: (id) => api.request(`/api/reports/${id}`, { method: "DELETE" }),
-  getCommentsByReport: (reportId) => api.request(`/api/comments/report/${reportId}`),
-  addComment: (body) => api.request("/api/comments", { method: "POST", body: JSON.stringify(body) }),
-  getAssignments: () => api.request("/api/administration/assignments"),
-  assignReport: (body) => api.request("/api/administration/assign", { method: "POST", body: JSON.stringify(body) }),
-  updateStatus: (body) => api.request("/api/administration/status/change", { method: "POST", body: JSON.stringify(body) }),
-  updateStatusNormal: (body) => api.request("/api/administration/status", { method: "POST", body: JSON.stringify(body) }),
-
-  // Notifications
-  getNotifications: (id) => api.request(`/api/notifications/user/${id}`, { method: "GET" }),
-  markAsRead: (id) => api.request(`/api/notifications/${id}/read`, { method: "POST" }),
-  addMedia: (body) => api.request("/api/media", { method: "POST", body: JSON.stringify(body) }),
-  createFlag: (body) => api.request("/api/flags", { method: "POST", body: JSON.stringify(body) }),
-  getFlags: () => api.request("/api/flags"),
-  getUnreviewedFlags: () => api.request("/api/flags/unreviewed"),
-  reviewFlag: (id, reviewed) => api.request(`/api/flags/${id}/review`, { method: "PATCH", body: JSON.stringify({ reviewed }) }),
-};
 
 // ─── STYLES ───────────────────────────────────────────────────────────────────
 const css = `
