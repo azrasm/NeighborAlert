@@ -11,6 +11,7 @@ public class Media {
     private Long id;
 
     @NotBlank(message = "URL is mandatory")
+    @Column(columnDefinition = "LONGTEXT")
     private String url;
 
     @NotNull(message = "Report must be assigned to the Media")
