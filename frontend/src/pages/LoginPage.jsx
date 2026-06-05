@@ -25,6 +25,8 @@ export const LoginPage = ({ onLogin }) => {
 
   const submitRegister = async () => {
     if (!regForm.username || !regForm.email || !regForm.password) { setError("Sva polja su obavezna."); return; }
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regForm.email);
+    if (!emailOk) { setError("Email adresa nije ispravnog formata (npr. korisnik@email.com)."); return; }
     if (regForm.password !== regForm.confirm) { setError("Lozinke se ne poklapaju."); return; }
     if (regForm.password.length < 6) { setError("Lozinka mora imati najmanje 6 karaktera."); return; }
     setLoading(true); setError("");

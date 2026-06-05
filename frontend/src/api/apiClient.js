@@ -30,7 +30,10 @@ httpClient.interceptors.response.use(
       localStorage.removeItem('na_token');
       window.location.href = '/login';
     }
-    const errMsg = error.response?.data?.message || `HTTP ${error.response?.status || 'Network Error'}`;
+    const data = error.response?.data || {};
+    const errMsg = (data.errors && Array.isArray(data.errors))
+    ? data.errors.join(", ")
+    : data.message || Object.values(data).filter(v => typeof v === "string").join(", ") || `HTTP ${error.response?.status || 'Network Error'}`;
     return Promise.reject(new Error(errMsg));
   }
 );
