@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/apiClient';
 import Alert from '../components/common/Alert';
 import Spinner from '../components/common/Spinner';
@@ -9,8 +10,8 @@ export const LoginPage = ({ onLogin }) => {
   const [regForm, setRegForm] = useState({ username: "", email: "", password: "", confirm: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const switchTab = (t) => { setTab(t); setError(""); };
+  const navigate = useNavigate();
+  const switchTab = (t) => { setTab(t); setError(""); navigate(t === "register" ? "/register" : "/login"); };
 
   const submitLogin = async () => {
     if (!loginForm.username || !loginForm.password) { setError("Unesite username i lozinku."); return; }

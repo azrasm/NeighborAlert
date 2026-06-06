@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './styles/global.css';
 
@@ -16,13 +17,11 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   if (!authData) return <Navigate to="/login" replace />;
   if (requireAdmin && authData.role !== "ADMIN") {
     return (
-      <main className="main">
-        <div className="empty">
-          <div className="empty-icon">🔒</div>
-          <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Pristup odbijen</div>
-          <div className="empty-text">Nemate ovlaštenje za pristup ovoj stranici.</div>
-        </div>
-      </main>
+      <div className="empty">
+        <div className="empty-icon">🔒</div>
+        <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Pristup odbijen</div>
+        <div className="empty-text">Nemate ovlaštenje za pristup ovoj stranici.</div>
+      </div>
     );
   }
   return children;
@@ -31,25 +30,29 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
 const AppContent = () => {
   const { authData, login, logout, currentUser } = useAuth();
 
-  if (!authData) {
-    return <LoginPage onLogin={login} />;
-  }
-
   return (
-    <div className="app">
-      <Navbar />
-      <main className="main">
-        <Routes>
-          <Route path="/reports" element={<ReportsPage currentUser={currentUser} />} />
-          <Route path="/mapa" element={<MapPage currentUser={currentUser} />} />
-          <Route path="/moje-prijave" element={<MyReportsPage currentUser={currentUser} />} />
-          <Route path="/users" element={<ProtectedRoute requireAdmin><UsersPage /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage currentUser={currentUser} /></ProtectedRoute>} />
-          <Route path="/profil" element={<ProfilePage authData={authData} onLogout={logout} />} />
-          <Route path="*" element={<Navigate to="/reports" replace />} />
-        </Routes>
-      </main>
-    </div>
+    <Routes>
+      <Route path="/login" element={authData ? <Navigate to="/reports" replace /> : <LoginPage onLogin={login} />} />
+      <Route path="/register" element={authData ? <Navigate to="/reports" replace /> : <LoginPage onLogin={login} />} />
+      <Route path="/*" element={
+        <ProtectedRoute>
+          <div className="app">
+            <Navbar />
+            <main className="main">
+              <Routes>
+                <Route path="/reports" element={<ReportsPage currentUser={currentUser} />} />
+                <Route path="/mapa" element={<MapPage currentUser={currentUser} />} />
+                <Route path="/moje-prijave" element={<MyReportsPage currentUser={currentUser} />} />
+                <Route path="/users" element={<ProtectedRoute requireAdmin><UsersPage /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage currentUser={currentUser} /></ProtectedRoute>} />
+                <Route path="/profil" element={<ProfilePage authData={authData} onLogout={logout} />} />
+                <Route path="*" element={<Navigate to="/reports" replace />} />
+              </Routes>
+            </main>
+          </div>
+        </ProtectedRoute>
+      } />
+    </Routes>
   );
 };
 
