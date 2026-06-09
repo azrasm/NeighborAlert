@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/apiClient';
+import '../../styles/NotificationPanel.css';
 
 export const NotificationBell = ({ currentUser }) => {
   const [notifications, setNotifications] = useState([]);
@@ -8,8 +9,9 @@ export const NotificationBell = ({ currentUser }) => {
   useEffect(() => {
     if (!currentUser?.userId) return;
     const fetch = async () => {
-      try { setNotifications(await api.getNotifications(currentUser.userId)); }
-      catch {}
+      try { 
+        setNotifications(await api.getNotifications(currentUser.userId)); 
+      } catch {}
     };
     fetch();
     const iv = setInterval(fetch, 120000);
@@ -17,38 +19,117 @@ export const NotificationBell = ({ currentUser }) => {
   }, [currentUser?.userId]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Marks a single notification as read and removes it from the list instantly
   const handleMarkAsRead = async (id) => {
     try {
       await api.markAsRead(id);
-      setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
+      // Filters it out immediately so it disappears from the view
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch {}
+  };
+
+  // Marks all notifications as read / clears the panel
+  const handleDismissAll = async () => {
+    try {
+      await api.markAsReadAll(currentUser.userId);
+      setNotifications([]);
     } catch {}
   };
 
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
-      <button onClick={() => setIsOpen(!isOpen)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", position: "relative" }}>
-        🔔
+    <>
+      {/* Bell Button inside Navbar */}
+      <button className="nav-btn active" onClick={() => setIsOpen(true)} style={{ position: 'relative' }}>
+        🔔 Obavještenja
         {unreadCount > 0 && (
-          <span style={{ position: "absolute", top: -2, right: -2, background: "var(--red)", color: "white", borderRadius: "50%", padding: "2px 6px", fontSize: "10px", fontWeight: "bold" }}>
+          <span style={{
+            position: "absolute", 
+            top: -2, 
+            right: -2, 
+            background: "var(--red)", 
+            color: "white", 
+            borderRadius: "50%", 
+            padding: "2px 6px", 
+            fontSize: "10px", 
+            fontWeight: "bold" 
+          }}>
             {unreadCount}
           </span>
         )}
       </button>
+
+      {/* Backdrop */}
       {isOpen && (
-        <div style={{ position: "absolute", right: 0, top: "30px", background: "var(--surface2)", boxShadow: "0px 4px 12px rgba(0,0,0,0.15)", borderRadius: "8px", width: "300px", zIndex: 100, maxHeight: "400px", overflowY: "auto", border: "1px solid var(--border)" }}>
-          <div style={{ padding: "12px", fontWeight: "bold", borderBottom: "1px solid var(--border)" }}>Obavještenja</div>
-          {notifications.length === 0 ? (
-            <div style={{ padding: "16px", textAlign: "center", color: "var(--muted)" }}>Nema novih obavještenja</div>
-          ) : notifications.map(n => (
-            <div key={n.id} onClick={() => handleMarkAsRead(n.id)} style={{ padding: "12px", borderBottom: "1px solid var(--border)", cursor: "pointer", background: n.read ? "transparent" : "rgba(0,123,255,0.05)", fontSize: "13px" }}>
-              <div style={{ fontWeight: n.read ? "normal" : "bold", marginBottom: "4px" }}>{n.title}</div>
-              <div style={{ color: "var(--text-secondary)" }}>{n.message}</div>
-              <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "4px" }}>{new Date(n.createdAt).toLocaleDateString()}</div>
-            </div>
-          ))}
-        </div>
+        <div className="noti-backdrop" onClick={() => setIsOpen(false)} />
       )}
-    </div>
+
+      {/* Side Panel Drawer */}
+      <div className={`noti-panel ${isOpen ? 'open' : ''}`}>
+        <div className="noti-header">
+          <span className="noti-title">Obavještenja</span>
+          <button className="modal-close" onClick={() => setIsOpen(false)}>&times;</button>
+        </div>
+
+        {notifications.length > 0 ? (
+          <>
+            <div className="noti-actions">
+              <button className="btn btn-ghost btn-sm" onClick={handleDismissAll}>
+                Označi sve kao pročitano
+              </button>
+            </div>
+            
+            <ul className="noti-list">
+              {notifications.map((n) => (
+                <li 
+                  key={n.id} 
+                  className="noti-item"
+                  style={{ background: n.read ? "transparent" : "rgba(255, 107, 43, 0.03)" }}
+                >
+                  <div className="noti-content">
+                    <div style={{ fontWeight: n.read ? "500" : "700", marginBottom: "4px", color: "var(--text)" }}>
+                      {n.title}
+                    </div>
+                    <p className="noti-text">{n.message}</p>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+                      <span className="noti-time">
+                        {new Date(n.createdAt).toLocaleDateString('bs-BA')}
+                      </span>
+                      
+                      {/* Explicit Text Action Button instead of whole-item click */}
+                      {!n.read && (
+                        <button 
+                          onClick={() => handleMarkAsRead(n.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--accent-light)',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            padding: 0,
+                            textDecoration: 'underline'
+                          }}
+                        >
+                          Označi kao pročitano
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <div className="empty">
+            <div className="empty-icon">🔔</div>
+            <p className="empty-text">Nema novih obavještenja</p>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
+
 export default NotificationBell;

@@ -10,6 +10,8 @@ import com.projekat.interaction_service.exception.ResourceNotFoundException;
 import com.projekat.interaction_service.model.Notification;
 import com.projekat.interaction_service.repository.NotificationRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class NotificationService {
 
@@ -54,5 +56,11 @@ public class NotificationService {
         notification.setCreatedAt(LocalDateTime.now());
 
         return notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void markAllAsRead(Long userId) {
+        // Pozivamo custom metodu iz repozitorija
+        notificationRepository.markAllAsReadByUserId(userId);
     }
 }

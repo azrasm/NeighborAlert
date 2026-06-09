@@ -62,6 +62,7 @@ export const getFlags = () => httpClient.get('/api/flags');
 export const getUnreviewedFlags = () => httpClient.get('/api/flags/unreviewed');
 export const reviewFlag = (id, reviewed) => httpClient.patch(`/api/flags/${id}/review`, { reviewed });
 export const upvoteReport = (body) => httpClient.post('/api/upvotes', body);
+export const markAsReadAll = (userId) => httpClient.post(`/api/notifications/read-all/user/${userId}`);
 
 const api = {
   login,
@@ -87,6 +88,7 @@ const api = {
   getUnreviewedFlags,
   reviewFlag,
   upvoteReport,
+  markAsReadAll,
   request: httpClient.request,
 };
 
