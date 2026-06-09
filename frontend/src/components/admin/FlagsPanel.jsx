@@ -1,16 +1,62 @@
 import { useState } from 'react';
 import api from '../../api/apiClient';
 import Spinner from '../common/Spinner';
+import ReportDetail from '../reports/ReportDetail';
+import Modal from '../common/Modal';
 
-export const FlagsPanel = ({ flags, onRefresh }) => {
+export const FlagsPanel = ({ flags, onRefresh, currentUser}) => {
   const [filter, setFilter] = useState("unreviewed");
   const [processing, setProcessing] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const displayed = filter === "all" ? flags : flags.filter(f => !f.reviewed);
 
   const handleReview = async (id) => {
     setProcessing(id);
     try { await api.reviewFlag(id, true); onRefresh(); }
+    catch {}
+    finally { setProcessing(null); }
+  };
+
+  const handleOpenReport = async (reportId) => {
+    setProcessing(`open-${reportId}`); // Privremeni spinner samo za taj klik
+    try {
+      // Pretpostavka je da tvoj apiClient ima getReport ili getReportById
+      const reportData = await api.getReport(reportId); 
+      setSelected(reportData);
+    } catch (error) {
+      console.error("Greška pri učitavanju detalja prijave:", error);
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  // Ako je prijava selektovana, odmah vrati ReportDetail
+  if (selected) {
+    return (
+      <ReportDetail 
+        report={selected} 
+        onBack={() => { setSelected(null); onRefresh(); }} 
+        currentUser={currentUser} 
+      />
+    );
+  }
+
+  //Funkcija za brisanje i automatski review
+  const handleDeleteReport = async () => {
+    if (!deleteConfirm) return;
+    
+    const flagId = deleteConfirm.id;
+    const reportId = deleteConfirm.reportId;
+    
+    setDeleteConfirm(null); // Zatvori modal odmah
+    setProcessing(flagId);
+    try { 
+      await api.deleteReport(reportId); 
+      await api.reviewFlag(flagId, true); 
+      onRefresh(); 
+    }
     catch {}
     finally { setProcessing(null); }
   };
@@ -41,7 +87,7 @@ export const FlagsPanel = ({ flags, onRefresh }) => {
                 <th>Korisnik #</th>
                 <th>Razlog</th>
                 <th>Status</th>
-                <th>Akcija</th>
+                <th style={{ textAlign: "center", paddingRight: "12px" }}>Akcija</th>
               </tr>
             </thead>
             <tbody>
@@ -52,7 +98,18 @@ export const FlagsPanel = ({ flags, onRefresh }) => {
               ) : displayed.map(f => (
                 <tr key={f.id}>
                   <td style={{ color: "var(--muted)" }}>#{f.id}</td>
-                  <td><span style={{ fontWeight: 600, color: "var(--accent-light)" }}>#{f.reportId}</span></td>
+
+                  {/* Klik na broj prijave sada okida handleOpenReport */}
+                  <td>
+                    <span 
+                      onClick={() => handleOpenReport(f.reportId)} 
+                      style={{ fontWeight: 600, color: "var(--accent-light)", cursor: "pointer", textDecoration: "underline" }}
+                      title="Pogledaj detalje prijave"
+                    >
+                      {processing === `open-${f.reportId}` ? <Spinner /> : `#${f.reportId}`}
+                    </span>
+                  </td>
+
                   <td>#{f.userId}</td>
                   <td><div className="flag-reason" title={f.reason}>{f.reason}</div></td>
                   <td>
@@ -63,14 +120,25 @@ export const FlagsPanel = ({ flags, onRefresh }) => {
                   </td>
                   <td>
                     {!f.reviewed && (
-                      <button
-                        className="btn btn-sm btn-ghost"
-                        onClick={() => handleReview(f.id)}
-                        disabled={processing === f.id}
-                        style={{ fontSize: 12 }}
-                      >
-                        {processing === f.id ? <Spinner /> : "✓ Označi pregledanim"}
-                      </button>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => handleReview(f.id)}
+                          disabled={processing === f.id}
+                          style={{ fontSize: 12 }}
+                        >
+                          {processing === f.id ? <Spinner /> : "✓ Označi pregledanim"}
+                        </button>
+
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={() => setDeleteConfirm(f)}
+                          disabled={processing === f.id}
+                          style={{ fontSize: 12 }}
+                        >
+                          {processing === f.id ? <Spinner /> : "✗ Obriši prijavu"}
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -79,6 +147,21 @@ export const FlagsPanel = ({ flags, onRefresh }) => {
           </table>
         </div>
       </div>
+
+      {/* Modal za brisanje*/}
+      {deleteConfirm && (
+        <Modal title="Potvrdi brisanje" onClose={() => setDeleteConfirm(null)}>
+          <p style={{ color: "var(--text-secondary)", marginBottom: 20 }}>
+            Da li ste sigurni da želite obrisati prijavu <strong>#{deleteConfirm.reportId}</strong>?<br />
+            <small style={{ color: 'var(--muted)' }}>Razlog prijave: {deleteConfirm.reason}</small>
+          </p>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+            <button className="btn btn-ghost" onClick={() => setDeleteConfirm(null)}>Odustani</button>
+            <button className="btn btn-danger" onClick={handleDeleteReport}>Obriši</button>
+          </div>
+        </Modal>
+      )}
+
     </div>
   );
 };

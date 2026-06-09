@@ -9,6 +9,9 @@ import org.springframework.stereotype.Component;
 import com.projekat.report_service.dto.AssignmentCompletedEvent;
 import com.projekat.report_service.dto.ReportResolvedEvent;
 import com.projekat.report_service.service.ReportService;
+
+import jakarta.transaction.Transactional;
+
 import com.projekat.report_service.config.RabbitMQConfig;
 import com.projekat.report_service.dto.ReportDTO;
 
@@ -37,22 +40,26 @@ public class ReportEventConsumer {
     private final ReportService reportService;
 
     // Slusa uspjesan zavrsetak iz administracije
+    @Transactional
     @RabbitListener(queues = RabbitMQConfig.ASSIGNMENT_COMPLETED_QUEUE)
     public void handleAssignmentCompleted(AssignmentCompletedEvent event) {
         log.info(ANSI_YELLOW + "Primljen event iz administracije za Report ID: {}", event.getReportId());
         
         try {
             // Lokalna transakcija: 
-            // Azuriranje statusa prijave u "Riješeno"
-            reportService.updateReportStatusByName(event.getReportId(), "Riješeno");
+            // Azuriranje statusa prijave u novi status
+            reportService.updateReportStatusByName(event.getReportId(), event.getNewStatus());
             
-            // Ako je upis u bazu uspjesan
+            // Ako je upis u bazu uspjesan i novi status je "Riješeno"
             // saljemo poruku za bodove
-            ReportDTO targetReport = reportService.getReportById(event.getReportId());
-            ReportResolvedEvent nextEvent = new ReportResolvedEvent(event.getReportId(), targetReport.getUserId(), 50);
-            log.info(ANSI_GREEN + "Report azuriran. Salje se zahtjev za dodjelu bodova korisniku: {}", targetReport.getUserId());
+             // Pokrece se RabbitMQ Saga samo ako administrator postavlja status na "Riješeno"
+            if ("Riješeno".equalsIgnoreCase(event.getNewStatus())) {
+                ReportDTO targetReport = reportService.getReportById(event.getReportId());
+                ReportResolvedEvent nextEvent = new ReportResolvedEvent(event.getReportId(), targetReport.getUserId(), 50);
+                log.info(ANSI_GREEN + "Report azuriran. Salje se zahtjev za dodjelu bodova korisniku: {}", targetReport.getUserId());
             
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SUCCESS_ROUTING_KEY, nextEvent);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SUCCESS_ROUTING_KEY, nextEvent);
+            }
             
         } catch (Exception e) {
             log.error(ANSI_RED + "Greska pri upisu u Report bazu. Pokrece se rollback za administraciju. Greska: {}", e.getMessage());

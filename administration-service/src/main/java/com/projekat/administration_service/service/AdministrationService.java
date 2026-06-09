@@ -120,17 +120,14 @@ public class AdministrationService {
 
         StatusHistory savedHistory = statusHistoryRepository.save(history);
 
-        // Pokrece se RabbitMQ Saga samo ako administrator postavlja status na "Riješeno"
-        if ("Riješeno".equalsIgnoreCase(dto.getNewStatus())) {
+        Long dummyAssignmentId = dto.getReportId();
             
-            Long dummyAssignmentId = dto.getReportId();
-            
-            // Slanje poruke
-            administrationEventProducer.produceAssignmentCompleted(
-                dummyAssignmentId, 
-                dto.getReportId()
-            );
-        }
+        // Slanje poruke
+        administrationEventProducer.produceAssignmentCompleted(
+            dummyAssignmentId, 
+            dto.getReportId(),
+            dto.getNewStatus()
+        );
 
         return savedHistory;
     }

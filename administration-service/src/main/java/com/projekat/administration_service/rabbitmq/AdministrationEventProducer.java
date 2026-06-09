@@ -30,9 +30,9 @@ public class AdministrationEventProducer {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void produceAssignmentCompleted(Long assignmentId, Long reportId) {
+    public void produceAssignmentCompleted(Long assignmentId, Long reportId, String newStatus) {
         // Kreiranje event-a
-        AssignmentCompletedEvent event = new AssignmentCompletedEvent(assignmentId, reportId);
+        AssignmentCompletedEvent event = new AssignmentCompletedEvent(assignmentId, reportId, newStatus);
         
         log.info(ANSI_YELLOW + "Slanje poruke na RabbitMQ: Assignment {} je zavrsen.", assignmentId);
         
