@@ -46,4 +46,11 @@ public class NotificationController {
         Notification updatedNotification = notificationService.markAsRead(id);
         return ResponseEntity.ok(updatedNotification);
     }
+
+    // POST /api/notifications/read-all/user/{userId}
+    @PostMapping("/read-all/user/{userId}")
+    public ResponseEntity<Void> markAllNotificationsAsRead(@PathVariable Long userId) {
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.ok().build();
+    }
 }
