@@ -9,7 +9,6 @@ import com.projekat.report_service.repository.CategoryRepository;
 import com.projekat.report_service.repository.MediaRepository;
 import com.projekat.report_service.repository.ReportRepository;
 import com.projekat.report_service.repository.StatusRepository;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.lang.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +26,6 @@ public class ReportService {
     @Autowired private StatusRepository statusRepository;
     @Autowired private ReportRepository reportRepository;
     @Autowired private MediaRepository mediaRepository;
-    @Autowired private ModelMapper modelMapper;
 
     private ReportDTO toDTO(Report report) {
         ReportDTO dto = new ReportDTO();

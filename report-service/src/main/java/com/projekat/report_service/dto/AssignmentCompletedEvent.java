@@ -25,4 +25,5 @@ public class AssignmentCompletedEvent implements Serializable {
 
     private Long assignmentId;
     private Long reportId;
+    private String newStatus;
 }

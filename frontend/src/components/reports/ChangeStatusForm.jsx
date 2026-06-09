@@ -21,23 +21,12 @@ export const ChangeStatusForm = ({ reports, onSaved, currentUser }) => {
     const r = reports.find(r => r.id === Number(reportId));
 
     try {
-      if (Number(statusId) === 3) {
         await api.updateStatus({
           reportId: Number(reportId),
           adminId: currentUser?.userId,
           newStatus: STATUS_LABELS[Number(statusId)],
-          comment: "Status promijenjen preko admin panela"
+          comment: "Status promijenjen preko admin panela",
         });
-      } else {
-        await api.updateReport(reportId, {
-          title: r.title,
-          description: r.description,
-          address: r.address,
-          userId: r.userId,
-          categoryId: r.category?.id || r.categoryId || 1,
-          statusId: Number(statusId),
-        });
-      }
 
       setMsg("Status uspješno promijenjen!");
       onSaved();
