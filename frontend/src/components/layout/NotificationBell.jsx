@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/apiClient';
-import '../../styles/NotificationPanel.css';
+import '../../styles/notificationPanel.css';
 
 export const NotificationBell = ({ currentUser }) => {
   const [notifications, setNotifications] = useState([]);
