@@ -1,6 +1,6 @@
 # NeighborAlert
 
-A microservices-based application for reporting and managing neighborhood issues.
+A microservices-based community platform for reporting and managing neighborhood issues. Citizens can submit reports, leave comments, and track resolution progress, while administrators manage assignments and update statuses.
 
 ## Services
 
@@ -19,17 +19,21 @@ A microservices-based application for reporting and managing neighborhood issues
 - Spring Boot 3.4.1
 - Spring Cloud 2024.0.0 (Gateway, Eureka, OpenFeign)
 - Spring Security + JWT (jjwt 0.12.6)
+- RabbitMQ (async communication, Saga pattern)
 - MySQL
+- React 18 (Vite)
 - Maven
 
 ## Getting Started
 
 ### Prerequisites
 - Java 21
-- MySQL running on localhost:3306
 - Maven
+- MySQL running on `localhost:3306`
+- RabbitMQ running on `localhost:5672`
+- Node.js 18+
 
-### Running the application
+### Running locally
 
 Start services in this order:
 
@@ -50,4 +54,51 @@ cd api-gateway && ./mvnw spring-boot:run
 cd frontend && npm run dev
 ```
 
-All external requests go through the gateway on port **8080**.
+Frontend is available at `http://localhost:3000`.
+
+All API requests go through the gateway at `http://localhost:8080`.
+
+### Running with Docker
+#### Prerequisites
+- Docker Desktop
+
+### Steps
+ 
+```bash
+# 1. Build JAR files for all services
+cd eureka-server && mvn clean package -DskipTests && cd ..
+cd api-gateway && mvn clean package -DskipTests && cd ..
+cd user-service && mvn clean package -DskipTests && cd ..
+cd report-service && mvn clean package -DskipTests && cd ..
+cd interaction-service && mvn clean package -DskipTests && cd ..
+cd administration-service && mvn clean package -DskipTests && cd ..
+ 
+# 2. Create environment file
+cp .env.example .env
+ 
+# 3. Start all services
+docker compose up --build
+```
+ 
+##### On subsequent runs (no code changes):
+```bash
+docker compose up
+```
+ 
+##### To stop:
+```bash
+docker compose down
+```
+### Docker URLs
+ 
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| API Gateway | http://localhost:8080 |
+| Eureka Dashboard | http://localhost:8761 |
+
+### Team members
++ Gičević Ajša
++ Hadžić Lejla
++ Rokša Amina
++ Smajović Azra
