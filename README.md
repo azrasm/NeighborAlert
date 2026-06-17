@@ -103,4 +103,4 @@ docker compose down
 + Rokša Amina
 + Smajović Azra
 
-[Application Demo](https://drive.google.com/drive/folders/1XpRBLGUR49rBh36TYYdox15GBByMpuMR)
+[Application Demo](https://drive.google.com/file/d/1vim-1iT99W_n2qPI20v7Hx_TP8iFVMTs/view?usp=sharing)
